@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loteca Viewer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: linear-gradient(to bottom right, #1e3a8a, #9333ea);
+      font-family: sans-serif;
+    }
+
+    .screen-16-9 {
+      position: relative;
+      width: 100vw;
+      height: calc(100vw * 9 / 16);
+      max-height: 100vh;
+      margin: auto;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-16-9 text-white text-center">
+    <div id="status" class="text-3xl font-bold animate-pulse">
+      Carregando dados...
+    </div>
+  </div>
+
+  <script>
+    const sheetURL = 'https://opensheet.elk.sh/1iAiRUowhJVCQOCQU-bI_qClsxpc2Zp-Px5nQJdGoxTs/Página1';
+
+    fetch(sheetURL)
+      .then(res => res.json())
+      .then(data => {
+        const statusDiv = document.getElementById('status');
+
+        // Aqui você pode fazer o que quiser com os dados
+        console.log('Dados carregados:', data);
+
+        // Exemplo: mostrar o número de linhas carregadas
+        statusDiv.textContent = `Dados carregados: ${data.length} registros`;
+        statusDiv.classList.remove('animate-pulse');
+      })
+      .catch(err => {
+        document.getElementById('status').textContent = 'Erro ao carregar dados';
+        console.error('Erro:', err);
+      });
+  </script>
+</body>
+</html>
