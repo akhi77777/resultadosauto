@@ -1,132 +1,16 @@
 <!doctype html>
-<html lang="pt-BR">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tabela dinâmica (para Digital Signage)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Signage - Planilha</title>
   <style>
-    html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,Arial}
-    #container{padding:10px;box-sizing:border-box;height:100%;display:flex;flex-direction:column}
-    #loader{margin:6px 0;font-size:14px;color:#444}
-    #table-wrapper{flex:1;overflow:auto}
-    table#sheet-table{border-collapse:collapse;width:100%;min-width:600px}
-    table#sheet-table th, table#sheet-table td{border:1px solid rgba(0,0,0,0.08);padding:8px;text-align:left}
-    table#sheet-table th{background:#f5f5f5;font-weight:600}
-    /* Ajustes rápidos para digital signage (aumente se precisar) */
-    @media (max-width:800px){table#sheet-table{font-size:14px}}
+    html,body{height:100%;margin:0}
+    iframe{border:0;width:100%;height:100vh;display:block}
   </style>
 </head>
 <body>
-  <div id="container">
-    <div id="loader">Carregando tabela...</div>
-    <div id="table-wrapper"></div>
-  </div>
-
-  <script>
-  // ------------------------------------------------------------
-  // Configurações (substitua pelo seu link pub CSV, se preferir)
-  // ------------------------------------------------------------
-  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pub?output=csv&gid=471953676';
-  const REFRESH_SECONDS = 60; // a cada 60s atualiza (ajuste conforme necessário)
-
-  // Fetch -> parse CSV simples (suporta aspas escapadas "" dentro de campos)
-  async function fetchAndRender(){
-    const loader = document.getElementById('loader');
-    loader.textContent = 'Atualizando...';
-    try{
-      const res = await fetch(CSV_URL);
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      const rows = parseCSV(text);
-      renderTable(rows);
-      loader.style.display = 'none';
-    }catch(err){
-      loader.textContent = 'Erro ao buscar a planilha: ' + err.message;
-    }
-  }
-
-  function parseCSV(text){
-    const rows = [];
-    let cur = '';
-    let row = [];
-    let inQuotes = false;
-    for(let i=0;i<text.length;i++){
-      const ch = text[i];
-      const next = text[i+1];
-      if(ch === '"'){
-        if(inQuotes && next === '"'){ cur += '"'; i++; }
-        else { inQuotes = !inQuotes; }
-      } else if(ch === ',' && !inQuotes){ row.push(cur); cur = ''; }
-      else if((ch === '\n' || ch === '\r') && !inQuotes){
-        if(ch === '\r' && next === '\n'){ i++; }
-        row.push(cur);
-        rows.push(row);
-        row = [];
-        cur = '';
-      } else { cur += ch; }
-    }
-    // push leftover
-    if(cur !== '' || row.length > 0){
-      row.push(cur);
-      rows.push(row);
-    }
-    return rows.filter(r => r.length > 0);
-  }
-
-  function renderTable(rows){
-    const wrap = document.getElementById('table-wrapper');
-    if(!rows || rows.length === 0){ wrap.innerHTML = '<div>Nenhum dado encontrado</div>'; return; }
-    let html = '<table id="sheet-table"><thead><tr>';
-    // primeira linha -> cabeçalho
-    rows[0].forEach(h => html += '<th>' + escapeHtml(h) + '</th>');
-    html += '</tr></thead><tbody>';
-    for(let r = 1; r < rows.length; r++){
-      html += '<tr>';
-      rows[r].forEach(c => html += '<td>' + escapeHtml(c) + '</td>');
-      html += '</tr>';
-    }
-    html += '</tbody></table>';
-    wrap.innerHTML = html;
-  }
-
-  function escapeHtml(s){ return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  // primeira carga
-  fetchAndRender();
-  // agendamento
-  setInterval(fetchAndRender, REFRESH_SECONDS * 1000);
-  </script>
-
-  <!--
-    OBSERVAÇÕES E ALTERNATIVAS
-    1) Este arquivo carrega o CSV público gerado pelo "Publicar na Web" do Google (pub?output=csv&gid=...).
-       Assim você evita a barra superior que aparece em pubhtml.
-    2) Se o seu player de signage bloquear requisições cross-origin (CORS), este fetch pode falhar no navegador.
-       Nesse caso, a alternativa é:
-         - Hospedar este HTML em um servidor que faça proxy (server-side) para o CSV, ou
-         - Criar um Google Apps Script (Web App) que leia a planilha e sirva a tabela diretamente (exemplo abaixo).
-
-    APPS SCRIPT (EXEMPLO RÁPIDO)
-    ----------------------------------------------------
-    // Code.gs
-    function doGet(e) {
-      var SS_ID = '1iAiRUowhJVCQOCQU-bI_qClsxpc2Zp-Px5nQJdGoxTs'; // substitua pelo seu ID real
-      var ss = SpreadsheetApp.openById(SS_ID);
-      var sh = ss.getSheetByName('NOME_DA_ABA');
-      var data = sh.getDataRange().getValues();
-      var html = '<!doctype html><html><head><meta charset="utf-8"></head><body>';
-      html += '<table border="1" style="border-collapse:collapse">';
-      for(var r=0;r<data.length;r++){
-        html += '<tr>';
-        for(var c=0;c<data[r].length;c++) html += '<td>' + (data[r][c]||'') + '</td>';
-        html += '</tr>';
-      }
-      html += '</table></body></html>';
-      return HtmlService.createHtmlOutput(html).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-    }
-
-    - Para usar o Apps Script: novo projeto → cole Code.gs → Deploy → Novo Deployment → Web app → Executar como: "Eu" → Quem tem acesso: "Qualquer pessoa".
-    - Use a URL do Web App no seu player (essa URL não terá a barra do Google e normalmente não sofre CORS).
-  -->
+  <!-- substitua WEB_APP_URL pela URL do seu Apps Script Web App -->
+  <iframe src="https://script.google.com/macros/s/AKfycby4y5rhngfcJBS4gI7O2ji4R8TLOowqLBgWgdQGYeAh_Ms2WN-daiETHlw8vu3q_MBE/exec" allowfullscreen sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
 </body>
 </html>
