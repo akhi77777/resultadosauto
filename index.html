@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Tabela de Loterias</title>
+  <title>Digital Signage - Abordagem Top-Left</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -29,6 +29,8 @@
       align-items: center;
       z-index: 1000;
       transition: opacity 0.5s ease-out;
+      color: #fff;
+      font-size: 24px;
     }
 
     #loadingScreen.hidden {
@@ -36,42 +38,21 @@
       pointer-events: none;
     }
 
-    .loading-text {
-      color: #fff;
-      font-size: 24px;
-      text-align: center;
-    }
-
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #333;
-      border-top: 4px solid #fff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
     /* 
-      Contêiner que vai centralizar e aplicar o zoom
+      Contêiner que vai aplicar o zoom
+      Posicionado no canto superior esquerdo
     */
     #zoomContainer {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 0;
+      left: 0;
       
       /* Dimensões fixas baseadas na análise real da planilha */
       width: 1788px;  /* Largura real da tabela medida */
       height: 984px;  /* Altura útil: 1013px - 29px (cabeçalho) */
       
-      /* Centraliza o contêiner */
-      transform: translate(-50%, -50%);
-      transform-origin: center center;
+      /* O zoom será aplicado a partir do canto superior esquerdo */
+      transform-origin: top left;
       
       overflow: hidden;
       border: none;
@@ -84,7 +65,7 @@
     }
 
     /* 
-      O iframe com dimensões fixas que serão escaladas
+      O iframe com dimensões fixas
     */
     #sheetFrame {
       border: none;
@@ -123,10 +104,7 @@
 
   <!-- Tela de carregamento -->
   <div id="loadingScreen">
-    <div>
-      <div class="loading-spinner"></div>
-      <div class="loading-text">Carregando tabela de loterias...</div>
-    </div>
+    Carregando tabela de loterias...
   </div>
 
   <!-- Indicador de atualização -->
@@ -166,11 +144,23 @@
       // Usa o MENOR fator para garantir que TUDO caiba na tela
       const scale = Math.min(scaleX, scaleY);
 
-      // Aplica o zoom no contêiner
-      zoomContainer.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      // Aplica o zoom no contêiner a partir do canto superior esquerdo
+      zoomContainer.style.transform = `scale(${scale})`;
+      
+      // Centraliza o contêiner escalado na tela
+      const scaledWidth = contentWidth * scale;
+      const scaledHeight = contentHeight * scale;
+      
+      const offsetX = (screenWidth - scaledWidth) / 2;
+      const offsetY = (screenHeight - scaledHeight) / 2;
+      
+      zoomContainer.style.left = `${offsetX}px`;
+      zoomContainer.style.top = `${offsetY}px`;
       
       console.log(`Zoom aplicado: ${scale.toFixed(3)} (${(scale * 100).toFixed(1)}%)`);
       console.log(`Tela: ${screenWidth}x${screenHeight}, Conteúdo: ${contentWidth}x${contentHeight}`);
+      console.log(`Conteúdo escalado: ${scaledWidth}x${scaledHeight}`);
+      console.log(`Offset para centralizar: ${offsetX}px, ${offsetY}px`);
     }
 
     // Função para esconder a tela de carregamento
