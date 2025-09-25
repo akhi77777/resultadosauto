@@ -8,19 +8,33 @@
       padding: 0;
       width: 100vw;
       height: 100vh;
-      overflow: hidden; /* evita scroll */
+      overflow: hidden;
+      background: #000; /* opcional: fundo preto */
     }
     iframe {
-      position: absolute;
-      top: -40px; /* sobe para esconder cabeçalho */
-      left: 0;
-      width: 100vw;
-      height: calc(100vh + 80px); /* cobre o rodapé também */
       border: none;
+      width: 100%;
+      height: 100%;
+      transform-origin: top left;
+      transform: scale(1);
     }
   </style>
 </head>
 <body>
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false"></iframe>
+  <iframe id="sheetFrame" 
+    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false">
+  </iframe>
+
+  <script>
+    function resizeIframe() {
+      const iframe = document.getElementById("sheetFrame");
+      const scaleX = window.innerWidth / iframe.offsetWidth;
+      const scaleY = window.innerHeight / iframe.offsetHeight;
+      const scale = Math.min(scaleX, scaleY);
+      iframe.style.transform = "scale(" + scale + ")";
+    }
+    window.onload = resizeIframe;
+    window.onresize = resizeIframe;
+  </script>
 </body>
 </html>
