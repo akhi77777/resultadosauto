@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Loterias com Máscara</title>
+  <title>Digital Signage - Tabela de Loterias</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -13,7 +13,7 @@
       height: 100vh;
       overflow: hidden;
       background: #000;
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
     }
 
     /* Tela de carregamento */
@@ -29,8 +29,6 @@
       align-items: center;
       z-index: 1000;
       transition: opacity 0.5s ease-out;
-      color: #fff;
-      font-size: 24px;
     }
 
     #loadingScreen.hidden {
@@ -38,424 +36,67 @@
       pointer-events: none;
     }
 
-    /* 
-      Contêiner principal que usa a máscara como fundo
-      Agora usando a URL direta do Imgur
-    */
-    #container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      background-image: url('https://i.imgur.com/s8AOsn9.jpeg' );
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-color: #000;
-    }
-
-    /* 
-      Classe base para todas as áreas de loteria
-    */
-    .loteria {
-      position: absolute;
-      color: #FFF; /* Alterado para branco para visibilidade */
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Adiciona uma leve sombra para melhor legibilidade */
-      font-weight: bold;
+    .loading-text {
+      color: #fff;
+      font-size: 24px;
       text-align: center;
-      font-size: 0.8vw; /* Responsivo baseado na largura da viewport */
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #333;
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     /* 
-      Estilos específicos para diferentes tipos de dados
+      Contêiner que vai centralizar e aplicar o zoom
     */
-    .concurso-data {
-      font-size: 0.6vw;
-      font-weight: normal;
+    #zoomContainer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      
+      /* Dimensões fixas baseadas na análise real da planilha */
+      width: 1788px;  /* Largura real da tabela medida */
+      height: 984px;  /* Altura útil: 1013px - 29px (cabeçalho) */
+      
+      /* Centraliza o contêiner */
+      transform: translate(-50%, -50%);
+      transform-origin: center center;
+      
+      overflow: hidden;
+      border: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in;
     }
 
-    .numeros-sorteados {
-      font-size: 1vw;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    .premiacao {
-      font-size: 0.5vw;
-      line-height: 1.2;
-    }
-
-    .acumulado {
-      font-size: 0.7vw;
-      font-weight: bold;
+    #zoomContainer.loaded {
+      opacity: 1;
     }
 
     /* 
-      Posicionamento específico para cada loteria
-      Baseado na análise da máscara (valores em % para responsividade)
+      O iframe com dimensões fixas que serão escaladas
     */
-
-    /* LINHA SUPERIOR */
-    
-    /* Mega-Sena */
-    .mega-sena {
-      left: 2.5%;
-      top: 5%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .mega-sena .concurso-data {
+    #sheetFrame {
+      border: none;
       position: absolute;
-      top: 8%;
+      
+      /* Dimensões exatas da planilha */
+      width: 1788px;
+      height: 1013px;
+      
+      /* Corta o cabeçalho puxando para cima */
+      top: -29px;
       left: 0;
-      width: 100%;
-    }
-
-    .mega-sena .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .mega-sena .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .mega-sena .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* Timemania */
-    .timemania {
-      left: 20.5%;
-      top: 5%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .timemania .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .timemania .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .timemania .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .timemania .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* Super Sete */
-    .super-sete {
-      left: 38.5%;
-      top: 5%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .super-sete .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .super-sete .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .super-sete .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .super-sete .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* Dupla Sena */
-    .dupla-sena {
-      left: 56.5%;
-      top: 5%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .dupla-sena .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .dupla-sena .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .dupla-sena .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .dupla-sena .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* Dia de Sorte */
-    .dia-sorte {
-      left: 74.5%;
-      top: 5%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .dia-sorte .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .dia-sorte .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .dia-sorte .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .dia-sorte .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* LINHA INFERIOR */
-
-    /* Loteca */
-    .loteca {
-      left: 2.5%;
-      top: 55%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .loteca .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .loteca .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .loteca .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .loteca .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* Lotomania */
-    .lotomania {
-      left: 20.5%;
-      top: 55%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .lotomania .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .lotomania .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .lotomania .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .lotomania .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* Lotofácil */
-    .lotofacil {
-      left: 38.5%;
-      top: 55%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .lotofacil .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .lotofacil .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .lotofacil .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .lotofacil .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* Quina */
-    .quina {
-      left: 56.5%;
-      top: 55%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .quina .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .quina .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .quina .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .quina .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    /* +Milionária */
-    .milionaria {
-      left: 74.5%;
-      top: 55%;
-      width: 16%;
-      height: 40%;
-    }
-
-    .milionaria .concurso-data {
-      position: absolute;
-      top: 8%;
-      left: 0;
-      width: 100%;
-    }
-
-    .milionaria .numeros-sorteados {
-      position: absolute;
-      top: 25%;
-      left: 0;
-      width: 100%;
-    }
-
-    .milionaria .premiacao {
-      position: absolute;
-      top: 45%;
-      left: 0;
-      width: 100%;
-    }
-
-    .milionaria .acumulado {
-      position: absolute;
-      bottom: 8%;
-      left: 0;
-      width: 100%;
     }
 
     /* Indicador de última atualização */
@@ -476,28 +117,16 @@
     #updateIndicator.show {
       opacity: 1;
     }
-
-    /* Mensagem de erro */
-    #errorMessage {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255, 0, 0, 0.8);
-      color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      font-size: 18px;
-      z-index: 200;
-      display: none;
-    }
   </style>
 </head>
 <body>
 
   <!-- Tela de carregamento -->
   <div id="loadingScreen">
-    Carregando dados das loterias...
+    <div>
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Carregando tabela de loterias...</div>
+    </div>
   </div>
 
   <!-- Indicador de atualização -->
@@ -505,260 +134,51 @@
     Última atualização: <span id="updateTime"></span>
   </div>
 
-  <!-- Mensagem de erro -->
-  <div id="errorMessage">
-    Erro ao carregar dados. Tentando novamente...
-  </div>
-
-  <!-- Contêiner principal com a máscara -->
-  <div id="container">
-    
-    <!-- Mega-Sena -->
-    <div class="loteria mega-sena">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Timemania -->
-    <div class="loteria timemania">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Super Sete -->
-    <div class="loteria super-sete">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Dupla Sena -->
-    <div class="loteria dupla-sena">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Dia de Sorte -->
-    <div class="loteria dia-sorte">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Loteca -->
-    <div class="loteria loteca">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Lotomania -->
-    <div class="loteria lotomania">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Lotofácil -->
-    <div class="loteria lotofacil">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- Quina -->
-    <div class="loteria quina">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
-    <!-- +Milionária -->
-    <div class="loteria milionaria">
-      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
-      <div class="numeros-sorteados">-</div>
-      <div class="premiacao">Carregando...</div>
-      <div class="acumulado">-</div>
-    </div>
-
+  <!-- Contêiner principal -->
+  <div id="zoomContainer">
+    <iframe id="sheetFrame"
+      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false">
+    </iframe>
   </div>
 
   <script>
     // Elementos DOM
-    const loadingScreen = document.getElementById("loadingScreen");
+    const loadingScreen = document.getElementById("loadingScreen" );
+    const zoomContainer = document.getElementById("zoomContainer");
+    const iframe = document.getElementById("sheetFrame");
     const updateIndicator = document.getElementById("updateIndicator");
     const updateTime = document.getElementById("updateTime");
-    const errorMessage = document.getElementById("errorMessage");
 
-    // URL da planilha publicada em formato CSV
-    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pub?gid=471953676&single=true&output=csv";
+    // Função para aplicar o zoom
+    function applyZoom() {
+      // Dimensões do conteúdo que queremos exibir (área útil da tabela)
+      const contentWidth = 1788;
+      const contentHeight = 984; // 1013 - 29 (cabeçalho)
 
-    // Função para buscar dados da planilha
-    async function fetchSheetData( ) {
-      try {
-        console.log("Buscando dados da planilha...");
-        
-        const response = await fetch(SHEET_CSV_URL);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const csvText = await response.text();
-        console.log("Dados CSV recebidos");
-        
-        return parseCSV(csvText);
-      } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-        showError("Erro ao carregar dados da planilha");
-        return null;
-      }
-    }
+      // Dimensões da tela
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
 
-    // Função para converter CSV em array
-    function parseCSV(csvText) {
-      const lines = csvText.split('\n');
-      const data = [];
+      // Calcula o fator de zoom para cada dimensão
+      const scaleX = screenWidth / contentWidth;
+      const scaleY = screenHeight / contentHeight;
+
+      // Usa o menor fator para garantir que tudo caiba na tela
+      const scale = Math.min(scaleX, scaleY);
+
+      // Aplica o zoom no contêiner
+      zoomContainer.style.transform = `translate(-50%, -50%) scale(${scale})`;
       
-      for (let line of lines) {
-        if (line.trim()) {
-          // Parser CSV simples, considerando que as células podem conter vírgulas dentro de aspas
-          const row = [];
-          let inQuote = false;
-          let currentCell = '';
-          for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            if (char === '"') {
-              inQuote = !inQuote;
-            } else if (char === ',' && !inQuote) {
-              row.push(currentCell.trim());
-              currentCell = '';
-            } else {
-              currentCell += char;
-            }
-          }
-          row.push(currentCell.trim()); // Adiciona a última célula
-          data.push(row);
-        }
-      }
-      
-      return data;
-    }
-
-    // Função para atualizar uma loteria específica
-    function updateLoteria(selector, loteriaData) {
-      const elemento = document.querySelector(selector);
-      if (!elemento || !loteriaData) return;
-
-      const concursoNum = elemento.querySelector('.concurso-num');
-      const data_elem = elemento.querySelector('.data');
-      const numerosElem = elemento.querySelector('.numeros-sorteados');
-      const premiacaoElem = elemento.querySelector('.premiacao');
-      const acumuladoElem = elemento.querySelector('.acumulado');
-
-      // Mapeamento baseado na análise da planilha
-      // ESTES ÍNDICES SÃO APROXIMADOS E PODEM PRECISAR DE AJUSTES FINOS
-      // Baseado na estrutura visual, onde cada loteria ocupa um bloco de colunas no CSV
-      
-      // Exemplo de mapeamento para Mega-Sena (primeiro bloco de colunas)
-      if (selector.includes('mega-sena')) {
-        if (concursoNum) concursoNum.textContent = loteriaData[1] || '-'; // Coluna B
-        if (data_elem) data_elem.textContent = loteriaData[3] || '-';     // Coluna D
-        if (numerosElem) numerosElem.textContent = loteriaData[4] || '-'; // Coluna E
-        if (premiacaoElem) premiacaoElem.innerHTML = 
-          `Sena: ${loteriaData[5] || '-'} - ${loteriaData[6] || '-'}  
-` +
-          `Quina: ${loteriaData[7] || '-'} - ${loteriaData[8] || '-'}  
-` +
-          `Quadra: ${loteriaData[9] || '-'} - ${loteriaData[10] || '-'}`;
-        if (acumuladoElem) acumuladoElem.textContent = loteriaData[11] || '-';
-      }
-      // Exemplo para Timemania (segundo bloco de colunas)
-      else if (selector.includes('timemania')) {
-        // Os índices aqui seriam diferentes, pois é outro bloco de colunas no CSV
-        // Por exemplo, se Timemania começa na coluna L (índice 11)
-        if (concursoNum) concursoNum.textContent = loteriaData[12] || '-'; 
-        if (data_elem) data_elem.textContent = loteriaData[14] || '-';     
-        if (numerosElem) numerosElem.textContent = loteriaData[15] || '-'; 
-        if (premiacaoElem) premiacaoElem.innerHTML = 
-          `7 ACERTOS: ${loteriaData[16] || '-'} - ${loteriaData[17] || '-'}  
-` +
-          `6 ACERTOS: ${loteriaData[18] || '-'} - ${loteriaData[19] || '-'}  
-` +
-          `5 ACERTOS: ${loteriaData[20] || '-'} - ${loteriaData[21] || '-'}`;
-        if (acumuladoElem) acumuladoElem.textContent = loteriaData[26] || '-'; // Acumulado pode estar mais à frente
-      }
-      // ... e assim por diante para cada loteria
-      // Este é o ponto onde você precisará de mais ajuste fino com base no CSV real
-    }
-
-    // Função para processar e renderizar todos os dados
-    function renderData(data) {
-      if (!data || data.length === 0) {
-        showError("Nenhum dado encontrado");
-        return;
-      }
-
-      console.log("Renderizando dados...");
-      
-      // A planilha tem uma estrutura complexa onde cada loteria ocupa várias colunas na mesma linha.
-      // Vamos assumir que a primeira linha do CSV contém todos os dados das loterias.
-      const mainRow = data[0]; 
-
-      if (mainRow) {
-        // Os índices abaixo são baseados na análise visual da planilha.
-        // Eles podem precisar de ajuste fino após ver o CSV real.
-
-        // Mega-Sena (Colunas B a L)
-        updateLoteria('.mega-sena', mainRow.slice(0, 12)); 
-        // Timemania (Colunas M a W)
-        updateLoteria('.timemania', mainRow.slice(11, 27)); 
-        // Super Sete (Colunas X a AH)
-        updateLoteria('.super-sete', mainRow.slice(23, 34));
-        // Dupla Sena (Colunas AI a AT)
-        updateLoteria('.dupla-sena', mainRow.slice(34, 46));
-        // Dia de Sorte (Colunas AU a BE)
-        updateLoteria('.dia-sorte', mainRow.slice(46, 57));
-        // Loteca (Colunas BF a BR)
-        updateLoteria('.loteca', mainRow.slice(57, 69));
-        // Lotomania (Colunas BS a CC)
-        updateLoteria('.lotomania', mainRow.slice(69, 81));
-        // Lotofácil (Colunas CD a CN)
-        updateLoteria('.lotofacil', mainRow.slice(81, 93));
-        // Quina (Colunas CO a CY)
-        updateLoteria('.quina', mainRow.slice(93, 105));
-        // +Milionária (Colunas CZ a DK)
-        updateLoteria('.milionaria', mainRow.slice(105, 117));
-      }
-      
-      console.log("Dados renderizados com sucesso");
-    }
-
-    // Função para mostrar erro
-    function showError(message) {
-      errorMessage.textContent = message;
-      errorMessage.style.display = "block";
-      
-      setTimeout(() => {
-        errorMessage.style.display = "none";
-      }, 5000);
+      console.log(`Zoom aplicado: ${scale.toFixed(3)} (${(scale * 100).toFixed(1)}%)`);
+      console.log(`Tela: ${screenWidth}x${screenHeight}, Conteúdo: ${contentWidth}x${contentHeight}`);
     }
 
     // Função para esconder a tela de carregamento
     function hideLoadingScreen() {
       loadingScreen.classList.add("hidden");
+      zoomContainer.classList.add("loaded");
       
+      // Remove a tela de carregamento após a transição
       setTimeout(() => {
         loadingScreen.style.display = "none";
       }, 500);
@@ -773,6 +193,7 @@
       });
       updateTime.textContent = timeString;
       
+      // Mostra o indicador por 3 segundos
       updateIndicator.classList.add("show");
       setTimeout(() => {
         updateIndicator.classList.remove("show");
@@ -780,27 +201,41 @@
     }
 
     // Função principal de inicialização
-    async function initialize() {
-      console.log("Inicializando aplicação...");
+    function initialize() {
+      applyZoom();
+      updateTimeIndicator();
       
-      const data = await fetchSheetData();
-      
-      if (data) {
-        renderData(data);
-        updateTimeIndicator();
-      }
-      
-      hideLoadingScreen();
+      // Esconde a tela de carregamento após um delay
+      setTimeout(hideLoadingScreen, 2000);
     }
 
     // Event listeners
     window.addEventListener("load", initialize);
+    window.addEventListener("resize", applyZoom);
 
-    // Auto-reload a cada 5 minutos
+    // Auto-reload a cada 5 minutos com indicador
     setInterval(function() {
-      console.log("Recarregando dados...");
-      initialize();
-    }, 5 * 60 * 1000);
+      console.log("Recarregando página para atualizar dados...");
+      window.location.reload();
+    }, 5 * 60 * 1000); // 5 minutos
+
+    // Detecta quando o iframe carrega para esconder o loading mais cedo se possível
+    iframe.addEventListener("load", function() {
+      console.log("Iframe carregado");
+      // Se já passou 1 segundo, esconde o loading
+      setTimeout(() => {
+        if (!loadingScreen.classList.contains("hidden")) {
+          hideLoadingScreen();
+        }
+      }, 1000);
+    });
+
+    // Tratamento de erros
+    window.addEventListener("error", function(e) {
+      console.error("Erro detectado:", e.error);
+      // Em caso de erro, ainda esconde o loading após um tempo
+      setTimeout(hideLoadingScreen, 3000);
+    });
   </script>
 
 </body>
