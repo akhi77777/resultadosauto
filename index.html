@@ -2,68 +2,85 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <title>Tabela de Signage</title>
   <style>
+    /* Remove margens e esconde barras de rolagem */
     html, body {
       margin: 0;
       padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #000;
+      width: 100vw; /* 100% da largura da tela */
+      height: 100vh; /* 100% da altura da tela */
+      overflow: hidden; /* Esconde qualquer conteúdo que transborde */
+      background: #000; /* Fundo preto para o caso de haver bordas */
+      display: flex; /* Usa Flexbox para centralizar o conteúdo */
+      justify-content: center; /* Centraliza horizontalmente */
+      align-items: center; /* Centraliza verticalmente */
     }
-    #wrapper {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
+
+    /* Contêiner que fará o recorte (clipper) */
     #clipper {
-      position: relative;
-      width: 1795px;   /* largura exata da tabela */
-      height: 933px;   /* altura útil: 1013px - 40px topo - 40px rodapé */
-      overflow: hidden;
+      /* Dimensões exatas da área visível da sua tabela */
+      width: 1795px;
+      height: 933px; /* Altura total (1013px) - 40px (topo) - 40px (rodapé) */
+      overflow: hidden; /* Essencial para "cortar" o que está fora */
+      position: relative; /* Necessário para o posicionamento do iframe */
+      
+      /* A transformação (zoom) será calculada via JavaScript */
+      transform-origin: center center; /* Define o ponto de origem do zoom para o centro */
     }
+
+    /* O iframe que carrega a planilha */
     #clipper iframe {
       border: none;
       position: absolute;
-      top: -40px;      /* corta cabeçalho */
+      
+      /* Puxa o iframe 40px para cima para esconder o cabeçalho */
+      top: -40px;
       left: 0;
+      
+      /* Dimensões originais da planilha publicada */
       width: 1795px;
-      height: 1013px;  /* altura total da aba publicada */
+      height: 1013px;
     }
   </style>
 </head>
 <body>
-  <div id="wrapper">
-    <div id="clipper">
-      <iframe id="sheetFrame"
-        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false">
-      </iframe>
-    </div>
+
+  <div id="clipper">
+    <iframe id="sheetFrame"
+      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false">
+    </iframe>
   </div>
 
   <script>
-    function resizeIframe() {
+    function resizeAndScale( ) {
       const clipper = document.getElementById("clipper");
 
-      const sheetWidth = 1795; // largura da tabela
-      const sheetHeight = 933; // altura útil (corte de 40px topo + 40px rodapé)
+      // Dimensões da área que queremos exibir
+      const contentWidth = 1795;
+      const contentHeight = 933;
 
-      const scaleX = window.innerWidth / sheetWidth;
-      const scaleY = window.innerHeight / sheetHeight;
+      // Dimensões da janela do navegador (ou da tela do signage)
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      // Calcula a proporção do zoom para preencher a tela sem distorcer
+      const scaleX = screenWidth / contentWidth;
+      const scaleY = screenHeight / contentHeight;
+      
+      // Usa o menor valor de escala para garantir que tudo caiba na tela
       const scale = Math.min(scaleX, scaleY);
 
-      clipper.style.transformOrigin = "top left";
+      // Aplica a transformação de escala (zoom)
       clipper.style.transform = "scale(" + scale + ")";
     }
 
-    window.onload = resizeIframe;
-    window.onresize = resizeIframe;
+    // Executa a função quando a página carrega
+    window.onload = resizeAndScale;
+    
+    // Executa a função novamente se a janela for redimensionada
+    window.onresize = resizeAndScale;
   </script>
+
 </body>
 </html>
