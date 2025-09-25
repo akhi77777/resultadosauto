@@ -2,31 +2,32 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Tabela de Signage</title>
+  <title>Tabela de Signage - Tela Cheia</title>
   <style>
-    /* Remove margens e esconde barras de rolagem */
+    /* Configurações básicas para remover margens e esconder overflow */
     html, body {
       margin: 0;
       padding: 0;
-      width: 100vw; /* 100% da largura da tela */
-      height: 100vh; /* 100% da altura da tela */
-      overflow: hidden; /* Esconde qualquer conteúdo que transborde */
-      background: #000; /* Fundo preto para o caso de haver bordas */
-      display: flex; /* Usa Flexbox para centralizar o conteúdo */
-      justify-content: center; /* Centraliza horizontalmente */
-      align-items: center; /* Centraliza verticalmente */
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
     }
 
-    /* Contêiner que fará o recorte (clipper) */
+    /* O contêiner que fará o recorte e o zoom */
     #clipper {
-      /* Dimensões exatas da área visível da sua tabela */
-      width: 1795px;
-      height: 933px; /* Altura total (1013px) - 40px (topo) - 40px (rodapé) */
-      overflow: hidden; /* Essencial para "cortar" o que está fora */
-      position: relative; /* Necessário para o posicionamento do iframe */
+      position: absolute;
+      top: 50%; /* Posiciona o topo do elemento no meio da tela */
+      left: 50%; /* Posiciona a esquerda do elemento no meio da tela */
       
-      /* A transformação (zoom) será calculada via JavaScript */
-      transform-origin: center center; /* Define o ponto de origem do zoom para o centro */
+      /* Dimensões da área visível da tabela (o que queremos mostrar) */
+      width: 1795px;
+      height: 933px;
+      
+      overflow: hidden; /* Essencial para "cortar" o iframe */
+      
+      /* Truque para centralizar: move o elemento de volta pela metade de seu tamanho */
+      transform: translate(-50%, -50%);
     }
 
     /* O iframe que carrega a planilha */
@@ -53,33 +54,32 @@
   </div>
 
   <script>
-    function resizeAndScale( ) {
+    function scaleToFill( ) {
       const clipper = document.getElementById("clipper");
 
-      // Dimensões da área que queremos exibir
-      const contentWidth = 1795;
-      const contentHeight = 933;
-
-      // Dimensões da janela do navegador (ou da tela do signage)
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-
-      // Calcula a proporção do zoom para preencher a tela sem distorcer
-      const scaleX = screenWidth / contentWidth;
-      const scaleY = screenHeight / contentHeight;
+      // Proporção da área visível da tabela (largura / altura)
+      const contentAspectRatio = 1795 / 933;
       
-      // Usa o menor valor de escala para garantir que tudo caiba na tela
-      const scale = Math.min(scaleX, scaleY);
+      // Proporção da tela
+      const screenAspectRatio = window.innerWidth / window.innerHeight;
 
-      // Aplica a transformação de escala (zoom)
-      clipper.style.transform = "scale(" + scale + ")";
+      // Comparamos as proporções para decidir como escalar
+      if (contentAspectRatio > screenAspectRatio) {
+        // Se o conteúdo for mais "largo" que a tela, a largura dita a escala.
+        // A altura será cortada.
+        clipper.style.width = "100vw"; // Ocupa 100% da largura da tela
+        clipper.style.height = `calc(100vw / ${contentAspectRatio})`; // Altura proporcional
+      } else {
+        // Se o conteúdo for mais "alto" que a tela, a altura dita a escala.
+        // A largura será cortada.
+        clipper.style.height = "100vh"; // Ocupa 100% da altura da tela
+        clipper.style.width = `calc(100vh * ${contentAspectRatio})`; // Largura proporcional
+      }
     }
 
-    // Executa a função quando a página carrega
-    window.onload = resizeAndScale;
-    
-    // Executa a função novamente se a janela for redimensionada
-    window.onresize = resizeAndScale;
+    // Executa a função quando a página carrega e quando é redimensionada
+    window.onload = scaleToFill;
+    window.onresize = scaleToFill;
   </script>
 
 </body>
