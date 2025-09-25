@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Tabela de Signage - Abordagem com Zoom</title>
+  <title>Tabela Digital Signage - Solução Otimizada</title>
   <style>
-    /* Fundo preto e sem barras de rolagem na página principal */
+    /* Remove margens e configura a página para tela cheia */
     html, body {
       margin: 0;
       padding: 0;
@@ -12,79 +12,101 @@
       height: 100vh;
       overflow: hidden;
       background: #000;
-      
-      /* Usar flexbox para centralizar o contêiner da tabela */
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     /* 
-      Este é o contêiner que será escalado (zoom).
-      Ele tem as dimensões exatas da ÁREA ÚTIL que queremos mostrar.
+      Contêiner principal que ocupará toda a tela.
+      Usamos flexbox para centralizar o conteúdo.
     */
-    #scaler {
-      /* Largura que você mediu originalmente. Vamos usá-la como referência. */
-      width: 1795px; 
-      /* Altura útil: Altura total - cabeçalho - rodapé */
-      height: 933px; /* (1013px - 40px - 40px) */
-      
-      overflow: hidden; /* Essencial para cortar o iframe */
-      position: relative; /* Necessário para posicionar o iframe dentro dele */
-
-      /* A mágica do zoom será aplicada aqui pelo JavaScript */
-      transform-origin: center center; /* O zoom acontece a partir do centro */
+    #container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
     }
 
-    #scaler iframe {
+    /* 
+      O iframe que carrega a planilha.
+      A chave é deixá-lo responsivo e usar zoom para ajustar o tamanho.
+    */
+    #sheetFrame {
       border: none;
-      position: absolute;
+      width: 100%;
+      height: 100%;
       
-      /* Puxa o iframe para cima para esconder o cabeçalho */
-      top: -40px;
-      left: 0;
-      
-      /* Dimensões totais do iframe, incluindo as partes que serão cortadas */
-      width: 1795px;
-      height: 1013px;
+      /* 
+        Aplicamos uma transformação para:
+        1. Cortar o cabeçalho (29px para cima)
+        2. Escalar o conteúdo para preencher a tela
+      */
+      transform-origin: top left;
+      position: relative;
+    }
+
+    /* 
+      Wrapper para aplicar o corte do cabeçalho
+    */
+    #frameWrapper {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
     }
   </style>
 </head>
 <body>
 
-  <div id="scaler">
-    <iframe id="sheetFrame"
-      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false">
-    </iframe>
+  <div id="container">
+    <div id="frameWrapper">
+      <iframe id="sheetFrame"
+        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false">
+      </iframe>
+    </div>
   </div>
 
   <script>
-    function applyZoom( ) {
-      const scaler = document.getElementById('scaler');
+    function adjustDisplay( ) {
+      const iframe = document.getElementById("sheetFrame");
+      const wrapper = document.getElementById("frameWrapper");
       
-      // Dimensões do conteúdo que queremos exibir
-      const contentWidth = 1795;
-      const contentHeight = 933;
-
-      // Dimensões da tela
+      // Obtém as dimensões da tela
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
-
-      // Calcula o fator de zoom necessário para a largura e altura
-      const scaleX = screenWidth / contentWidth;
-      const scaleY = screenHeight / contentHeight;
-
-      // Usa o MENOR fator de zoom para garantir que TUDO caiba na tela,
-      // mantendo a proporção e sem cortar o conteúdo.
-      const scale = Math.min(scaleX, scaleY);
-
-      // Aplica o zoom no contêiner
-      scaler.style.transform = 'scale(' + scale + ')';
+      
+      // Altura do cabeçalho que queremos cortar (descoberto na análise: 29px)
+      const headerHeight = 29;
+      
+      // Altura do rodapé que queremos cortar (estimativa: 20px para "Published by Google")
+      const footerHeight = 20;
+      
+      // Calcula a altura útil disponível
+      const usableHeight = screenHeight;
+      
+      // Ajusta o iframe para compensar o corte do cabeçalho
+      iframe.style.marginTop = `-${headerHeight}px`;
+      
+      // Aumenta a altura do iframe para compensar os cortes
+      iframe.style.height = `calc(100% + ${headerHeight + footerHeight}px)`;
+      
+      // O Google Sheets se adaptará automaticamente à largura disponível
+      iframe.style.width = "100%";
     }
 
-    // Aplica o zoom quando a página carrega e quando a janela é redimensionada
-    window.onload = applyZoom;
-    window.onresize = applyZoom;
+    // Aplica os ajustes quando a página carrega
+    window.addEventListener("load", function() {
+      // Aguarda um pouco para o iframe carregar completamente
+      setTimeout(adjustDisplay, 1000);
+    });
+    
+    // Reaplica os ajustes se a janela for redimensionada
+    window.addEventListener("resize", adjustDisplay);
+    
+    // Recarrega a página a cada 5 minutos para manter os dados atualizados
+    setInterval(function() {
+      window.location.reload();
+    }, 5 * 60 * 1000); // 5 minutos em milissegundos
   </script>
 
 </body>
