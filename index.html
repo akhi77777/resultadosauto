@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Tabela Google Sheets (Sem Zoom Interno)</title>
+  <title>Digital Signage - Tabela Google Sheets (Zoom Reduzido)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -33,25 +33,32 @@
     }
 
     /* 
+      Wrapper para aplicar o zoom e centralização
+    */
+    #zoomWrapper {
+      position: absolute;
+      /* Dimensões baseadas na nossa análise anterior */
+      width: 1788px;   /* Largura real da tabela */
+      height: 1013px;  /* Altura total da aba publicada (incluindo cabeçalho e rodapé) */
+      
+      /* Aplica o zoom de 85% e centraliza */
+      transform: scale(0.85) translate(-50%, -50%);
+      transform-origin: 0 0; /* Garante que a escala seja aplicada a partir do canto superior esquerdo */
+      top: 50%;
+      left: 50%;
+    }
+
+    /* 
       O iframe que carrega a planilha.
-      Definimos uma largura e altura que esperamos que a planilha tenha, 
-      e usamos um top negativo para cortar o cabeçalho.
-      NÃO aplicamos 'transform: scale()' aqui.
+      Usamos um top negativo para cortar o cabeçalho.
     */
     #sheetFrame {
       border: none;
       position: absolute;
-      
-      /* Estes valores são baseados na nossa análise anterior */
-      width: 1788px;   /* Largura real da tabela */
-      height: 1013px;  /* Altura total da aba publicada (incluindo cabeçalho e rodapé) */
+      width: 100%;   /* Ocupa 100% do zoomWrapper */
+      height: 100%;  /* Ocupa 100% do zoomWrapper */
       top: -29px;      /* Corta o cabeçalho (29px) */
       left: 0;         /* Alinha à esquerda */
-
-      /* Ajuste fino para cortar o rodapé, se necessário. 
-         Aumentamos a altura do iframe para que o 'top' negativo não corte o final.
-         Ajuste 'bottom' ou 'height' se o rodapé ainda aparecer. */
-      /* bottom: -20px; */ 
     }
 
     /* Indicador de última atualização */
@@ -78,9 +85,11 @@
 
   <!-- Contêiner que recorta o iframe -->
   <div id="clipper">
-    <iframe id="sheetFrame"
-      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false">
-    </iframe>
+    <div id="zoomWrapper">
+      <iframe id="sheetFrame"
+        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false">
+      </iframe>
+    </div>
   </div>
 
   <!-- Indicador de atualização -->
