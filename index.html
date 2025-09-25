@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Tabela Google Sheets (Zoom Direto no Iframe)</title>
+  <title>Digital Signage - Abordagem Canva</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -17,8 +17,8 @@
     }
 
     /* 
-      Contêiner principal que ocupa toda a tela.
-      Ele será o responsável por "recortar" o iframe.
+      Contêiner principal que ocupa toda a tela e recorta o conteúdo.
+      Usamos flexbox para centralizar o conteúdo visível.
     */
     #clipper {
       position: absolute;
@@ -26,7 +26,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden; /* Isso é crucial para esconder as partes indesejadas */
+      overflow: hidden; /* ESSENCIAL: Recorta o iframe superdimensionado */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -34,25 +34,29 @@
 
     /* 
       O iframe que carrega a planilha.
-      Aplicamos o zoom diretamente no iframe para escalar seu conteúdo.
-      Usamos um top negativo para cortar o cabeçalho.
+      Ele terá dimensões MUITO MAIORES que a tela para garantir que o Google Sheets
+      renderize todo o seu conteúdo sem barras de rolagem internas.
+      Ajustamos sua posição para mostrar apenas a parte desejada.
     */
     #sheetFrame {
       border: none;
       position: absolute;
       
-      /* Dimensões intrínsecas da planilha para evitar barras de rolagem internas */
-      /* Estes valores são baseados na nossa análise anterior */
-      width: 1788px;   /* Largura real da tabela */
-      height: 1013px;  /* Altura total da aba publicada */
+      /* Dimensões superdimensionadas para o iframe */
+      /* Estes valores são arbitrários, mas grandes o suficiente para conter a planilha */
+      width: 2500px;   /* Ex: 2500px, maior que a largura da planilha */
+      height: 2000px;  /* Ex: 2000px, maior que a altura da planilha */
       
-      /* Posicionamento para cortar o cabeçalho */
-      top: -29px;      /* Corta o cabeçalho (29px) */
-      left: 0;         /* Alinha à esquerda */
+      /* URL da planilha publicada */
+      src: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
 
-      /* Aplica o zoom diretamente no iframe */
-      transform-origin: top left;
-      transform: scale(0.0); /* Valor inicial, será ajustado pelo JS */
+      /* 
+        Ajustamos a posição do iframe para que a parte útil da planilha
+        fique visível no centro do #clipper, cortando o cabeçalho e rodapé.
+        Estes valores precisarão de ajuste fino.
+      */
+      top: -100px;  /* Exemplo: move o iframe 100px para cima para cortar o cabeçalho */
+      left: -200px; /* Exemplo: move o iframe 200px para a esquerda para centralizar */
     }
 
     /* Indicador de última atualização */
@@ -60,7 +64,7 @@
       position: fixed;
       bottom: 10px;
       right: 10px;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.7 );
       color: #fff;
       padding: 5px 10px;
       border-radius: 5px;
@@ -79,8 +83,7 @@
 
   <!-- Contêiner que recorta o iframe -->
   <div id="clipper">
-    <iframe id="sheetFrame"
-      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false">
+    <iframe id="sheetFrame">
     </iframe>
   </div>
 
@@ -90,46 +93,70 @@
   </div>
 
   <script>
-    const updateIndicator = document.getElementById("updateIndicator" );
+    const updateIndicator = document.getElementById("updateIndicator");
     const updateTime = document.getElementById("updateTime");
     const sheetFrame = document.getElementById("sheetFrame");
-    const clipper = document.getElementById("clipper");
 
-    // Dimensões intrínsecas da planilha (incluindo cabeçalho e rodapé que queremos cortar)
-    const SHEET_ORIGINAL_WIDTH = 1788; // Largura real da tabela
-    const SHEET_ORIGINAL_HEIGHT = 1013; // Altura total da aba publicada
-    const HEADER_HEIGHT = 29; // Altura do cabeçalho a ser cortado
-    const FOOTER_HEIGHT = 20; // Altura do rodapé a ser cortado (estimativa)
+    // URL da planilha publicada
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
 
-    function applyIframeZoom() {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+    // Função para ajustar a posição do iframe
+    function adjustIframePosition( ) {
+      const clipper = document.getElementById("clipper");
+      const sheetFrame = document.getElementById("sheetFrame");
 
-      // Altura útil da planilha que queremos exibir (sem cabeçalho e rodapé)
-      const usableSheetHeight = SHEET_ORIGINAL_HEIGHT - HEADER_HEIGHT - FOOTER_HEIGHT;
+      // Dimensões do clipper (viewport)
+      const clipperWidth = clipper.offsetWidth;
+      const clipperHeight = clipper.offsetHeight;
+
+      // Dimensões do iframe (superdimensionado)
+      const iframeWidth = sheetFrame.offsetWidth;
+      const iframeHeight = sheetFrame.offsetHeight;
+
+      // Dimensões da parte útil da planilha (estimativa baseada na análise visual)
+      // A planilha tem aproximadamente 1788px de largura e 984px de altura útil
+      const USABLE_SHEET_WIDTH = 1788;
+      const USABLE_SHEET_HEIGHT = 984; // 1013 - 29 (cabeçalho) - 20 (rodapé)
 
       // Calcula o fator de escala para que a parte útil da planilha caiba na viewport
       // Usamos Math.min para garantir que toda a tabela seja visível, com faixas pretas se necessário
-      const scaleX = viewportWidth / SHEET_ORIGINAL_WIDTH;
-      const scaleY = viewportHeight / usableSheetHeight;
+      const scaleX = clipperWidth / USABLE_SHEET_WIDTH;
+      const scaleY = clipperHeight / USABLE_SHEET_HEIGHT;
       const scale = Math.min(scaleX, scaleY);
 
-      // Aplica o scale ao iframe
+      // Calcula o tamanho que a parte útil da planilha terá após o scale
+      const scaledUsableWidth = USABLE_SHEET_WIDTH * scale;
+      const scaledUsableHeight = USABLE_SHEET_HEIGHT * scale;
+
+      // Calcula a posição para centralizar a parte útil da planilha dentro do clipper
+      const offsetX = (clipperWidth - scaledUsableWidth) / 2;
+      const offsetY = (clipperHeight - scaledUsableHeight) / 2;
+
+      // Ajusta a posição do iframe para cortar o cabeçalho e centralizar a parte útil
+      // O iframe é superdimensionado, então precisamos mover sua origem
+      const HEADER_HEIGHT_PX = 29; // Altura do cabeçalho a ser cortado
+      const FOOTER_HEIGHT_PX = 20; // Altura do rodapé a ser cortado (estimativa)
+
+      // A posição final do iframe deve ser tal que a parte útil (sem cabeçalho/rodapé)
+      // esteja centralizada e escalada corretamente.
+      // Para isso, o iframe inteiro (superdimensionado) precisa ser movido.
+      
+      // Calcula a posição do topo do iframe para que o conteúdo comece no topo do clipper
+      // e o cabeçalho seja cortado.
+      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale); 
+      const iframeLeft = offsetX; 
+
+      // Aplica o scale e a translação ao iframe
       sheetFrame.style.transform = `scale(${scale})`;
+      sheetFrame.style.transformOrigin = `top left`;
+      sheetFrame.style.top = `${iframeTop}px`;
+      sheetFrame.style.left = `${iframeLeft}px`;
 
-      // Centraliza o iframe escalado dentro do clipper
-      // Calcula o tamanho real do iframe após o scale
-      const scaledWidth = SHEET_ORIGINAL_WIDTH * scale;
-      const scaledHeight = usableSheetHeight * scale;
-
-      // Calcula a margem para centralizar
-      const marginLeft = (viewportWidth - scaledWidth) / 2;
-      const marginTop = (viewportHeight - scaledHeight) / 2;
-
-      // Ajusta a posição do iframe para centralizar e cortar o cabeçalho
-      // O top negativo já está aplicado no CSS, aqui ajustamos a posição geral
-      sheetFrame.style.left = `${marginLeft}px`;
-      sheetFrame.style.top = `${marginTop - (HEADER_HEIGHT * scale)}px`; // Ajusta o top para cortar o cabeçalho e centralizar
+      // Ajusta as dimensões do iframe para que ele seja grande o suficiente para conter o conteúdo
+      // e o Google Sheets não adicione barras de rolagem internas.
+      // Estes valores são os valores são os originais do iframe, mas escalados.
+      sheetFrame.style.width = `${SHEET_ORIGINAL_WIDTH}px`;
+      sheetFrame.style.height = `${SHEET_ORIGINAL_HEIGHT}px`;
     }
 
     // Função para atualizar o indicador de tempo
@@ -149,12 +176,15 @@
 
     // Inicializa o indicador de tempo e o zoom ao carregar
     window.addEventListener("load", () => {
-      applyIframeZoom();
-      updateTimeIndicator();
+      sheetFrame.src = SHEET_URL; // Define a URL do iframe aqui para garantir que o JS já esteja pronto
+      sheetFrame.onload = () => {
+        adjustIframePosition();
+        updateTimeIndicator();
+      };
     });
 
     // Reaplica o zoom se a janela for redimensionada
-    window.addEventListener("resize", applyIframeZoom);
+    window.addEventListener("resize", adjustIframePosition);
 
     // Auto-reload a cada 5 minutos com indicador
     setInterval(function() {
