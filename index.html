@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Abordagem Top-Left</title>
+  <title>Digital Signage - Sem Zoom</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -39,45 +39,33 @@
     }
 
     /* 
-      Contêiner que vai aplicar o zoom
-      Posicionado no canto superior esquerdo
+      Contêiner simples que ocupa toda a tela
+      SEM zoom, SEM transformações complexas
     */
-    #zoomContainer {
-      position: absolute;
+    #container {
+      position: fixed;
       top: 0;
       left: 0;
-      
-      /* Dimensões fixas baseadas na análise real da planilha */
-      width: 1788px;  /* Largura real da tabela medida */
-      height: 984px;  /* Altura útil: 1013px - 29px (cabeçalho) */
-      
-      /* O zoom será aplicado a partir do canto superior esquerdo */
-      transform-origin: top left;
-      
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      border: none;
-      opacity: 0;
-      transition: opacity 0.5s ease-in;
-    }
-
-    #zoomContainer.loaded {
-      opacity: 1;
     }
 
     /* 
-      O iframe com dimensões fixas
+      O iframe simples, sem dimensões fixas
+      Deixa o Google Sheets se adaptar naturalmente
     */
     #sheetFrame {
       border: none;
-      position: absolute;
+      width: 100%;
+      height: 100%;
       
-      /* Dimensões exatas da planilha */
-      width: 1788px;
-      height: 1013px;
+      /* Remove qualquer margem ou padding que possa existir */
+      margin: 0;
+      padding: 0;
       
-      /* Corta o cabeçalho puxando para cima */
-      top: -29px;
-      left: 0;
+      /* Garante que o iframe ocupe todo o espaço disponível */
+      display: block;
     }
 
     /* Indicador de última atualização */
@@ -113,7 +101,7 @@
   </div>
 
   <!-- Contêiner principal -->
-  <div id="zoomContainer">
+  <div id="container">
     <iframe id="sheetFrame"
       src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false">
     </iframe>
@@ -122,51 +110,13 @@
   <script>
     // Elementos DOM
     const loadingScreen = document.getElementById("loadingScreen" );
-    const zoomContainer = document.getElementById("zoomContainer");
     const iframe = document.getElementById("sheetFrame");
     const updateIndicator = document.getElementById("updateIndicator");
     const updateTime = document.getElementById("updateTime");
 
-    // Função para aplicar o zoom
-    function applyZoom() {
-      // Dimensões do conteúdo que queremos exibir (área útil da tabela)
-      const contentWidth = 1788;
-      const contentHeight = 984; // 1013 - 29 (cabeçalho)
-
-      // Dimensões da tela
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-
-      // Calcula o fator de zoom para cada dimensão
-      const scaleX = screenWidth / contentWidth;
-      const scaleY = screenHeight / contentHeight;
-
-      // Usa o MENOR fator para garantir que TUDO caiba na tela
-      const scale = Math.min(scaleX, scaleY);
-
-      // Aplica o zoom no contêiner a partir do canto superior esquerdo
-      zoomContainer.style.transform = `scale(${scale})`;
-      
-      // Centraliza o contêiner escalado na tela
-      const scaledWidth = contentWidth * scale;
-      const scaledHeight = contentHeight * scale;
-      
-      const offsetX = (screenWidth - scaledWidth) / 2;
-      const offsetY = (screenHeight - scaledHeight) / 2;
-      
-      zoomContainer.style.left = `${offsetX}px`;
-      zoomContainer.style.top = `${offsetY}px`;
-      
-      console.log(`Zoom aplicado: ${scale.toFixed(3)} (${(scale * 100).toFixed(1)}%)`);
-      console.log(`Tela: ${screenWidth}x${screenHeight}, Conteúdo: ${contentWidth}x${contentHeight}`);
-      console.log(`Conteúdo escalado: ${scaledWidth}x${scaledHeight}`);
-      console.log(`Offset para centralizar: ${offsetX}px, ${offsetY}px`);
-    }
-
     // Função para esconder a tela de carregamento
     function hideLoadingScreen() {
       loadingScreen.classList.add("hidden");
-      zoomContainer.classList.add("loaded");
       
       // Remove a tela de carregamento após a transição
       setTimeout(() => {
@@ -192,26 +142,27 @@
 
     // Função principal de inicialização
     function initialize() {
-      applyZoom();
       updateTimeIndicator();
       
       // Esconde a tela de carregamento após um delay
       setTimeout(hideLoadingScreen, 2000);
+      
+      console.log("Inicialização simples - sem zoom, sem transformações");
+      console.log(`Tela: ${window.innerWidth}x${window.innerHeight}`);
     }
 
     // Event listeners
     window.addEventListener("load", initialize);
-    window.addEventListener("resize", applyZoom);
 
-    // Auto-reload a cada 5 minutos com indicador
+    // Auto-reload a cada 5 minutos
     setInterval(function() {
       console.log("Recarregando página para atualizar dados...");
       window.location.reload();
     }, 5 * 60 * 1000); // 5 minutos
 
-    // Detecta quando o iframe carrega para esconder o loading mais cedo se possível
+    // Detecta quando o iframe carrega
     iframe.addEventListener("load", function() {
-      console.log("Iframe carregado");
+      console.log("Iframe carregado - abordagem simples");
       // Se já passou 1 segundo, esconde o loading
       setTimeout(() => {
         if (!loadingScreen.classList.contains("hidden")) {
