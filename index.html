@@ -58,7 +58,8 @@
     */
     .loteria {
       position: absolute;
-      color: #000;
+      color: #FFF; /* Alterado para branco para visibilidade */
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Adiciona uma leve sombra para melhor legibilidade */
       font-weight: bold;
       text-align: center;
       font-size: 0.8vw; /* Responsivo baseado na largura da viewport */
@@ -632,8 +633,22 @@
       
       for (let line of lines) {
         if (line.trim()) {
-          // Parser CSV simples
-          const row = line.split(',').map(cell => cell.replace(/"/g, '').trim());
+          // Parser CSV simples, considerando que as células podem conter vírgulas dentro de aspas
+          const row = [];
+          let inQuote = false;
+          let currentCell = '';
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              inQuote = !inQuote;
+            } else if (char === ',' && !inQuote) {
+              row.push(currentCell.trim());
+              currentCell = '';
+            } else {
+              currentCell += char;
+            }
+          }
+          row.push(currentCell.trim()); // Adiciona a última célula
           data.push(row);
         }
       }
@@ -642,28 +657,50 @@
     }
 
     // Função para atualizar uma loteria específica
-    function updateLoteria(selector, data) {
+    function updateLoteria(selector, loteriaData) {
       const elemento = document.querySelector(selector);
-      if (!elemento) return;
+      if (!elemento || !loteriaData) return;
 
-      // Esta é uma implementação simplificada
-      // Você precisará ajustar baseado na estrutura real dos seus dados CSV
-      
-      // Exemplo de como atualizar (ajuste conforme necessário):
       const concursoNum = elemento.querySelector('.concurso-num');
       const data_elem = elemento.querySelector('.data');
       const numerosElem = elemento.querySelector('.numeros-sorteados');
       const premiacaoElem = elemento.querySelector('.premiacao');
       const acumuladoElem = elemento.querySelector('.acumulado');
 
-      if (data && data.length > 0) {
-        // Ajuste estes índices baseado na estrutura real do seu CSV
-        if (concursoNum) concursoNum.textContent = data[0] || '-';
-        if (data_elem) data_elem.textContent = data[1] || '-';
-        if (numerosElem) numerosElem.textContent = data[2] || '-';
-        if (premiacaoElem) premiacaoElem.innerHTML = data[3] || 'Sem dados';
-        if (acumuladoElem) acumuladoElem.textContent = data[4] || '-';
+      // Mapeamento baseado na análise da planilha
+      // ESTES ÍNDICES SÃO APROXIMADOS E PODEM PRECISAR DE AJUSTES FINOS
+      // Baseado na estrutura visual, onde cada loteria ocupa um bloco de colunas no CSV
+      
+      // Exemplo de mapeamento para Mega-Sena (primeiro bloco de colunas)
+      if (selector.includes('mega-sena')) {
+        if (concursoNum) concursoNum.textContent = loteriaData[1] || '-'; // Coluna B
+        if (data_elem) data_elem.textContent = loteriaData[3] || '-';     // Coluna D
+        if (numerosElem) numerosElem.textContent = loteriaData[4] || '-'; // Coluna E
+        if (premiacaoElem) premiacaoElem.innerHTML = 
+          `Sena: ${loteriaData[5] || '-'} - ${loteriaData[6] || '-'}  
+` +
+          `Quina: ${loteriaData[7] || '-'} - ${loteriaData[8] || '-'}  
+` +
+          `Quadra: ${loteriaData[9] || '-'} - ${loteriaData[10] || '-'}`;
+        if (acumuladoElem) acumuladoElem.textContent = loteriaData[11] || '-';
       }
+      // Exemplo para Timemania (segundo bloco de colunas)
+      else if (selector.includes('timemania')) {
+        // Os índices aqui seriam diferentes, pois é outro bloco de colunas no CSV
+        // Por exemplo, se Timemania começa na coluna L (índice 11)
+        if (concursoNum) concursoNum.textContent = loteriaData[12] || '-'; 
+        if (data_elem) data_elem.textContent = loteriaData[14] || '-';     
+        if (numerosElem) numerosElem.textContent = loteriaData[15] || '-'; 
+        if (premiacaoElem) premiacaoElem.innerHTML = 
+          `7 ACERTOS: ${loteriaData[16] || '-'} - ${loteriaData[17] || '-'}  
+` +
+          `6 ACERTOS: ${loteriaData[18] || '-'} - ${loteriaData[19] || '-'}  
+` +
+          `5 ACERTOS: ${loteriaData[20] || '-'} - ${loteriaData[21] || '-'}`;
+        if (acumuladoElem) acumuladoElem.textContent = loteriaData[26] || '-'; // Acumulado pode estar mais à frente
+      }
+      // ... e assim por diante para cada loteria
+      // Este é o ponto onde você precisará de mais ajuste fino com base no CSV real
     }
 
     // Função para processar e renderizar todos os dados
@@ -675,32 +712,37 @@
 
       console.log("Renderizando dados...");
       
-      // Esta é uma implementação simplificada
-      // Você precisará mapear os dados CSV para cada loteria
-      // baseado na estrutura real da sua planilha
-      
-      try {
-        // Exemplo de mapeamento (ajuste conforme necessário):
-        // Assumindo que cada linha do CSV corresponde a uma loteria
-        
-        if (data.length >= 10) {
-          updateLoteria('.mega-sena', data[0]);
-          updateLoteria('.timemania', data[1]);
-          updateLoteria('.super-sete', data[2]);
-          updateLoteria('.dupla-sena', data[3]);
-          updateLoteria('.dia-sorte', data[4]);
-          updateLoteria('.loteca', data[5]);
-          updateLoteria('.lotomania', data[6]);
-          updateLoteria('.lotofacil', data[7]);
-          updateLoteria('.quina', data[8]);
-          updateLoteria('.milionaria', data[9]);
-        }
-        
-        console.log("Dados renderizados com sucesso");
-      } catch (error) {
-        console.error("Erro ao renderizar dados:", error);
-        showError("Erro ao processar dados");
+      // A planilha tem uma estrutura complexa onde cada loteria ocupa várias colunas na mesma linha.
+      // Vamos assumir que a primeira linha do CSV contém todos os dados das loterias.
+      const mainRow = data[0]; 
+
+      if (mainRow) {
+        // Os índices abaixo são baseados na análise visual da planilha.
+        // Eles podem precisar de ajuste fino após ver o CSV real.
+
+        // Mega-Sena (Colunas B a L)
+        updateLoteria('.mega-sena', mainRow.slice(0, 12)); 
+        // Timemania (Colunas M a W)
+        updateLoteria('.timemania', mainRow.slice(11, 27)); 
+        // Super Sete (Colunas X a AH)
+        updateLoteria('.super-sete', mainRow.slice(23, 34));
+        // Dupla Sena (Colunas AI a AT)
+        updateLoteria('.dupla-sena', mainRow.slice(34, 46));
+        // Dia de Sorte (Colunas AU a BE)
+        updateLoteria('.dia-sorte', mainRow.slice(46, 57));
+        // Loteca (Colunas BF a BR)
+        updateLoteria('.loteca', mainRow.slice(57, 69));
+        // Lotomania (Colunas BS a CC)
+        updateLoteria('.lotomania', mainRow.slice(69, 81));
+        // Lotofácil (Colunas CD a CN)
+        updateLoteria('.lotofacil', mainRow.slice(81, 93));
+        // Quina (Colunas CO a CY)
+        updateLoteria('.quina', mainRow.slice(93, 105));
+        // +Milionária (Colunas CZ a DK)
+        updateLoteria('.milionaria', mainRow.slice(105, 117));
       }
+      
+      console.log("Dados renderizados com sucesso");
     }
 
     // Função para mostrar erro
