@@ -20,39 +20,47 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
-    iframe {
-      border: none;
-      transform-origin: top left;
+    #clipper {
       position: relative;
-      top: -40px; /* sobe para esconder título */
-      height: calc(100% + 80px); /* cobre rodapé */
+      width: 1200px;   /* largura base da aba */
+      height: 760px;   /* altura base da aba menos título e rodapé */
+      overflow: hidden;
+    }
+    #clipper iframe {
+      border: none;
+      position: absolute;
+      top: -40px;      /* corta cabeçalho */
+      left: 0;
+      width: 1200px;
+      height: 840px;   /* altura original + rodapé */
     }
   </style>
 </head>
 <body>
   <div id="wrapper">
-    <iframe id="sheetFrame" 
-      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false">
-    </iframe>
+    <div id="clipper">
+      <iframe id="sheetFrame"
+        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false">
+      </iframe>
+    </div>
   </div>
 
   <script>
     function resizeIframe() {
-      const iframe = document.getElementById("sheetFrame");
+      const wrapper = document.getElementById("wrapper");
+      const clipper = document.getElementById("clipper");
 
-      // tamanho base aproximado da tabela publicada (ajuste conforme sua aba)
-      const sheetWidth = 1200;
-      const sheetHeight = 800;
+      const sheetWidth = 1200; // largura da planilha publicada
+      const sheetHeight = 760; // altura da área útil (sem título/rodapé)
 
-      // calcula escala para caber na tela
       const scaleX = window.innerWidth / sheetWidth;
       const scaleY = window.innerHeight / sheetHeight;
       const scale = Math.min(scaleX, scaleY);
 
-      iframe.style.width = sheetWidth + "px";
-      iframe.style.height = sheetHeight + "px";
-      iframe.style.transform = "scale(" + scale + ")";
+      clipper.style.transformOrigin = "top left";
+      clipper.style.transform = "scale(" + scale + ")";
     }
 
     window.onload = resizeIframe;
