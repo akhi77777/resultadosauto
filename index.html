@@ -2,8 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Tabela de Signage - Solução Flexível</title>
+  <title>Tabela de Signage - Abordagem com Zoom</title>
   <style>
+    /* Fundo preto e sem barras de rolagem na página principal */
     html, body {
       margin: 0;
       padding: 0;
@@ -11,43 +12,80 @@
       height: 100vh;
       overflow: hidden;
       background: #000;
+      
+      /* Usar flexbox para centralizar o contêiner da tabela */
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     /* 
-      Este contêiner vai "espremer" o iframe verticalmente
-      para cortar o cabeçalho e o rodapé.
+      Este é o contêiner que será escalado (zoom).
+      Ele tem as dimensões exatas da ÁREA ÚTIL que queremos mostrar.
     */
-    #clipper {
-      width: 100%;
-      height: 100%;
-      position: relative;
+    #scaler {
+      /* Largura que você mediu originalmente. Vamos usá-la como referência. */
+      width: 1795px; 
+      /* Altura útil: Altura total - cabeçalho - rodapé */
+      height: 933px; /* (1013px - 40px - 40px) */
+      
+      overflow: hidden; /* Essencial para cortar o iframe */
+      position: relative; /* Necessário para posicionar o iframe dentro dele */
+
+      /* A mágica do zoom será aplicada aqui pelo JavaScript */
+      transform-origin: center center; /* O zoom acontece a partir do centro */
     }
 
-    #clipper iframe {
+    #scaler iframe {
       border: none;
       position: absolute;
       
-      /* 
-        A MÁGICA ESTÁ AQUI:
-        - top: -40px -> Puxa o iframe 40px para cima, escondendo o cabeçalho.
-        - left: 0 -> Alinha na esquerda.
-        - width: 100% -> Força o iframe a ter 100% da largura da tela.
-        - height: calc(100% + 80px) -> Aumenta a altura do iframe para compensar
-          o que foi cortado em cima (40px) e o que seria cortado embaixo (40px).
-          Isso garante que o conteúdo da tabela preencha a altura visível.
-      */
-      top: -40px; 
+      /* Puxa o iframe para cima para esconder o cabeçalho */
+      top: -40px;
       left: 0;
-      width: 100%;
-      height: calc(100% + 80px); /* 40px para o topo + 40px para o rodapé */
+      
+      /* Dimensões totais do iframe, incluindo as partes que serão cortadas */
+      width: 1795px;
+      height: 1013px;
     }
   </style>
 </head>
 <body>
-  <div id="clipper">
+
+  <div id="scaler">
     <iframe id="sheetFrame"
       src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false">
     </iframe>
   </div>
+
+  <script>
+    function applyZoom( ) {
+      const scaler = document.getElementById('scaler');
+      
+      // Dimensões do conteúdo que queremos exibir
+      const contentWidth = 1795;
+      const contentHeight = 933;
+
+      // Dimensões da tela
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      // Calcula o fator de zoom necessário para a largura e altura
+      const scaleX = screenWidth / contentWidth;
+      const scaleY = screenHeight / contentHeight;
+
+      // Usa o MENOR fator de zoom para garantir que TUDO caiba na tela,
+      // mantendo a proporção e sem cortar o conteúdo.
+      const scale = Math.min(scaleX, scaleY);
+
+      // Aplica o zoom no contêiner
+      scaler.style.transform = 'scale(' + scale + ')';
+    }
+
+    // Aplica o zoom quando a página carrega e quando a janela é redimensionada
+    window.onload = applyZoom;
+    window.onresize = applyZoom;
+  </script>
+
 </body>
 </html>
