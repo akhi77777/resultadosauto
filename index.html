@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - API Google Sheets</title>
+  <title>Digital Signage - Loterias com Máscara</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -13,7 +13,7 @@
       height: 100vh;
       overflow: hidden;
       background: #000;
-      font-family: Arial, sans-serif;
+      font-family: 'Arial', sans-serif;
     }
 
     /* Tela de carregamento */
@@ -39,48 +39,423 @@
     }
 
     /* 
-      Contêiner que ocupa toda a tela
+      Contêiner principal que usa a máscara como fundo
+      IMPORTANTE: Coloque o arquivo 'mascara_loterias.png' no mesmo diretório deste HTML
     */
     #container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      padding: 10px;
-      box-sizing: border-box;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('mascara_loterias.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: #000;
     }
 
     /* 
-      Tabela customizada que replica o layout do Google Sheets
+      Classe base para todas as áreas de loteria
     */
-    #customTable {
-      width: 100%;
-      height: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      color: white;
-    }
-
-    #customTable td {
-      border: 1px solid #333;
-      padding: 4px;
+    .loteria {
+      position: absolute;
+      color: #000;
+      font-weight: bold;
       text-align: center;
-      vertical-align: middle;
+      font-size: 0.8vw; /* Responsivo baseado na largura da viewport */
     }
 
-    /* Cores das loterias (replicando o Google Sheets) */
-    .mega-sena { background-color: #0f7b0f; }
-    .timemania { background-color: #ffd700; color: #000; }
-    .super-sete { background-color: #90ee90; color: #000; }
-    .dupla-sena { background-color: #8b0000; }
-    .dia-sorte { background-color: #ffa500; color: #000; }
-    .loteca { background-color: #dc143c; }
-    .lotomania { background-color: #ff8c00; color: #000; }
-    .lotofacil { background-color: #9932cc; }
-    .quina { background-color: #4169e1; }
-    .milionaria { background-color: #191970; }
+    /* 
+      Estilos específicos para diferentes tipos de dados
+    */
+    .concurso-data {
+      font-size: 0.6vw;
+      font-weight: normal;
+    }
+
+    .numeros-sorteados {
+      font-size: 1vw;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .premiacao {
+      font-size: 0.5vw;
+      line-height: 1.2;
+    }
+
+    .acumulado {
+      font-size: 0.7vw;
+      font-weight: bold;
+    }
+
+    /* 
+      Posicionamento específico para cada loteria
+      Baseado na análise da máscara (valores em % para responsividade)
+    */
+
+    /* LINHA SUPERIOR */
+    
+    /* Mega-Sena */
+    .mega-sena {
+      left: 2.5%;
+      top: 5%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .mega-sena .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .mega-sena .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .mega-sena .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .mega-sena .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* Timemania */
+    .timemania {
+      left: 20.5%;
+      top: 5%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .timemania .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .timemania .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .timemania .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .timemania .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* Super Sete */
+    .super-sete {
+      left: 38.5%;
+      top: 5%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .super-sete .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .super-sete .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .super-sete .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .super-sete .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* Dupla Sena */
+    .dupla-sena {
+      left: 56.5%;
+      top: 5%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .dupla-sena .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .dupla-sena .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .dupla-sena .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .dupla-sena .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* Dia de Sorte */
+    .dia-sorte {
+      left: 74.5%;
+      top: 5%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .dia-sorte .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .dia-sorte .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .dia-sorte .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .dia-sorte .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* LINHA INFERIOR */
+
+    /* Loteca */
+    .loteca {
+      left: 2.5%;
+      top: 55%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .loteca .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .loteca .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .loteca .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .loteca .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* Lotomania */
+    .lotomania {
+      left: 20.5%;
+      top: 55%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .lotomania .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .lotomania .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .lotomania .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .lotomania .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* Lotofácil */
+    .lotofacil {
+      left: 38.5%;
+      top: 55%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .lotofacil .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .lotofacil .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .lotofacil .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .lotofacil .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* Quina */
+    .quina {
+      left: 56.5%;
+      top: 55%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .quina .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .quina .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .quina .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .quina .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    /* +Milionária */
+    .milionaria {
+      left: 74.5%;
+      top: 55%;
+      width: 16%;
+      height: 40%;
+    }
+
+    .milionaria .concurso-data {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      width: 100%;
+    }
+
+    .milionaria .numeros-sorteados {
+      position: absolute;
+      top: 25%;
+      left: 0;
+      width: 100%;
+    }
+
+    .milionaria .premiacao {
+      position: absolute;
+      top: 45%;
+      left: 0;
+      width: 100%;
+    }
+
+    .milionaria .acumulado {
+      position: absolute;
+      bottom: 8%;
+      left: 0;
+      width: 100%;
+    }
 
     /* Indicador de última atualização */
     #updateIndicator {
@@ -103,10 +478,16 @@
 
     /* Mensagem de erro */
     #errorMessage {
-      color: #ff6b6b;
-      text-align: center;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.8);
+      color: #fff;
       padding: 20px;
+      border-radius: 10px;
       font-size: 18px;
+      z-index: 200;
       display: none;
     }
   </style>
@@ -128,17 +509,94 @@
     Erro ao carregar dados. Tentando novamente...
   </div>
 
-  <!-- Contêiner principal -->
+  <!-- Contêiner principal com a máscara -->
   <div id="container">
-    <table id="customTable">
-      <!-- Os dados serão inseridos aqui via JavaScript -->
-    </table>
+    
+    <!-- Mega-Sena -->
+    <div class="loteria mega-sena">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Timemania -->
+    <div class="loteria timemania">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Super Sete -->
+    <div class="loteria super-sete">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Dupla Sena -->
+    <div class="loteria dupla-sena">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Dia de Sorte -->
+    <div class="loteria dia-sorte">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Loteca -->
+    <div class="loteria loteca">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Lotomania -->
+    <div class="loteria lotomania">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Lotofácil -->
+    <div class="loteria lotofacil">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- Quina -->
+    <div class="loteria quina">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
+    <!-- +Milionária -->
+    <div class="loteria milionaria">
+      <div class="concurso-data">Concurso <span class="concurso-num">-</span> - Data <span class="data">-</span></div>
+      <div class="numeros-sorteados">-</div>
+      <div class="premiacao">Carregando...</div>
+      <div class="acumulado">-</div>
+    </div>
+
   </div>
 
   <script>
     // Elementos DOM
     const loadingScreen = document.getElementById("loadingScreen");
-    const customTable = document.getElementById("customTable");
     const updateIndicator = document.getElementById("updateIndicator");
     const updateTime = document.getElementById("updateTime");
     const errorMessage = document.getElementById("errorMessage");
@@ -157,7 +615,7 @@
         }
         
         const csvText = await response.text();
-        console.log("Dados CSV recebidos:", csvText.substring(0, 200) + "...");
+        console.log("Dados CSV recebidos");
         
         return parseCSV(csvText);
       } catch (error) {
@@ -174,7 +632,7 @@
       
       for (let line of lines) {
         if (line.trim()) {
-          // Simples parser CSV (pode precisar de ajustes dependendo do formato)
+          // Parser CSV simples
           const row = line.split(',').map(cell => cell.replace(/"/g, '').trim());
           data.push(row);
         }
@@ -183,43 +641,66 @@
       return data;
     }
 
-    // Função para renderizar a tabela
-    function renderTable(data) {
+    // Função para atualizar uma loteria específica
+    function updateLoteria(selector, data) {
+      const elemento = document.querySelector(selector);
+      if (!elemento) return;
+
+      // Esta é uma implementação simplificada
+      // Você precisará ajustar baseado na estrutura real dos seus dados CSV
+      
+      // Exemplo de como atualizar (ajuste conforme necessário):
+      const concursoNum = elemento.querySelector('.concurso-num');
+      const data_elem = elemento.querySelector('.data');
+      const numerosElem = elemento.querySelector('.numeros-sorteados');
+      const premiacaoElem = elemento.querySelector('.premiacao');
+      const acumuladoElem = elemento.querySelector('.acumulado');
+
+      if (data && data.length > 0) {
+        // Ajuste estes índices baseado na estrutura real do seu CSV
+        if (concursoNum) concursoNum.textContent = data[0] || '-';
+        if (data_elem) data_elem.textContent = data[1] || '-';
+        if (numerosElem) numerosElem.textContent = data[2] || '-';
+        if (premiacaoElem) premiacaoElem.innerHTML = data[3] || 'Sem dados';
+        if (acumuladoElem) acumuladoElem.textContent = data[4] || '-';
+      }
+    }
+
+    // Função para processar e renderizar todos os dados
+    function renderData(data) {
       if (!data || data.length === 0) {
         showError("Nenhum dado encontrado");
         return;
       }
 
-      let html = "";
+      console.log("Renderizando dados...");
       
-      for (let i = 0; i < data.length; i++) {
-        const row = data[i];
-        html += "<tr>";
+      // Esta é uma implementação simplificada
+      // Você precisará mapear os dados CSV para cada loteria
+      // baseado na estrutura real da sua planilha
+      
+      try {
+        // Exemplo de mapeamento (ajuste conforme necessário):
+        // Assumindo que cada linha do CSV corresponde a uma loteria
         
-        for (let j = 0; j < row.length; j++) {
-          const cell = row[j];
-          let className = "";
-          
-          // Aplica classes CSS baseadas no conteúdo (simplificado)
-          if (cell.toLowerCase().includes("mega")) className = "mega-sena";
-          else if (cell.toLowerCase().includes("time")) className = "timemania";
-          else if (cell.toLowerCase().includes("super")) className = "super-sete";
-          else if (cell.toLowerCase().includes("dupla")) className = "dupla-sena";
-          else if (cell.toLowerCase().includes("dia")) className = "dia-sorte";
-          else if (cell.toLowerCase().includes("loteca")) className = "loteca";
-          else if (cell.toLowerCase().includes("lotomania")) className = "lotomania";
-          else if (cell.toLowerCase().includes("lotofacil")) className = "lotofacil";
-          else if (cell.toLowerCase().includes("quina")) className = "quina";
-          else if (cell.toLowerCase().includes("milion")) className = "milionaria";
-          
-          html += `<td class="${className}">${cell}</td>`;
+        if (data.length >= 10) {
+          updateLoteria('.mega-sena', data[0]);
+          updateLoteria('.timemania', data[1]);
+          updateLoteria('.super-sete', data[2]);
+          updateLoteria('.dupla-sena', data[3]);
+          updateLoteria('.dia-sorte', data[4]);
+          updateLoteria('.loteca', data[5]);
+          updateLoteria('.lotomania', data[6]);
+          updateLoteria('.lotofacil', data[7]);
+          updateLoteria('.quina', data[8]);
+          updateLoteria('.milionaria', data[9]);
         }
         
-        html += "</tr>";
+        console.log("Dados renderizados com sucesso");
+      } catch (error) {
+        console.error("Erro ao renderizar dados:", error);
+        showError("Erro ao processar dados");
       }
-      
-      customTable.innerHTML = html;
-      console.log("Tabela renderizada com sucesso");
     }
 
     // Função para mostrar erro
@@ -263,19 +744,11 @@
       const data = await fetchSheetData();
       
       if (data) {
-        renderTable(data);
+        renderData(data);
         updateTimeIndicator();
-      } else {
-        // Se falhar, volta para o iframe como fallback
-        console.log("Fallback para iframe...");
-        container.innerHTML = `
-          <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false"
-                  style="border: none; width: 100%; height: 100%; margin: 0; padding: 0; display: block;">
-          </iframe>
-        `;
       }
       
-      hideLoadingScreen( );
+      hideLoadingScreen();
     }
 
     // Event listeners
