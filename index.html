@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Tabela de Signage - Tela Cheia</title>
+  <title>Tabela de Signage - Preenchimento Total</title>
   <style>
-    /* Configurações básicas para remover margens e esconder overflow */
+    /* Remove margens e esconde barras de rolagem */
     html, body {
       margin: 0;
       padding: 0;
@@ -14,34 +14,41 @@
       background: #000;
     }
 
-    /* O contêiner que fará o recorte e o zoom */
+    /* 
+      O contêiner que fará o recorte.
+      Agora ele vai ocupar 100% da tela, sem se preocupar com a proporção.
+    */
     #clipper {
-      position: absolute;
-      top: 50%; /* Posiciona o topo do elemento no meio da tela */
-      left: 50%; /* Posiciona a esquerda do elemento no meio da tela */
-      
-      /* Dimensões da área visível da tabela (o que queremos mostrar) */
-      width: 1795px;
-      height: 933px;
-      
-      overflow: hidden; /* Essencial para "cortar" o iframe */
-      
-      /* Truque para centralizar: move o elemento de volta pela metade de seu tamanho */
-      transform: translate(-50%, -50%);
+      position: relative;
+      width: 100%; /* Ocupa 100% da largura do body */
+      height: 100%; /* Ocupa 100% da altura do body */
+      overflow: hidden; /* Essencial para "cortar" o que está fora */
     }
 
-    /* O iframe que carrega a planilha */
+    /* 
+      O iframe que carrega a planilha.
+      Vamos usar transform: scale() para esticá-lo para preencher o #clipper.
+    */
     #clipper iframe {
       border: none;
       position: absolute;
       
-      /* Puxa o iframe 40px para cima para esconder o cabeçalho */
-      top: -40px;
-      left: 0;
-      
       /* Dimensões originais da planilha publicada */
       width: 1795px;
       height: 1013px;
+      
+      /* Puxa o iframe para cima para esconder o cabeçalho */
+      top: -40px;
+      left: 0;
+      
+      /* 
+        A mágica acontece aqui:
+        - Define a origem da transformação no canto superior esquerdo.
+        - Usa scaleX() e scaleY() para esticar o iframe de forma independente
+          para preencher o contêiner #clipper.
+      */
+      transform-origin: top left;
+      transform: scaleX(calc(100vw / 1795px)) scaleY(calc(100vh / (1013px - 80px)));
     }
   </style>
 </head>
@@ -49,38 +56,9 @@
 
   <div id="clipper">
     <iframe id="sheetFrame"
-      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false">
+      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false">
     </iframe>
   </div>
-
-  <script>
-    function scaleToFill( ) {
-      const clipper = document.getElementById("clipper");
-
-      // Proporção da área visível da tabela (largura / altura)
-      const contentAspectRatio = 1795 / 933;
-      
-      // Proporção da tela
-      const screenAspectRatio = window.innerWidth / window.innerHeight;
-
-      // Comparamos as proporções para decidir como escalar
-      if (contentAspectRatio > screenAspectRatio) {
-        // Se o conteúdo for mais "largo" que a tela, a largura dita a escala.
-        // A altura será cortada.
-        clipper.style.width = "100vw"; // Ocupa 100% da largura da tela
-        clipper.style.height = `calc(100vw / ${contentAspectRatio})`; // Altura proporcional
-      } else {
-        // Se o conteúdo for mais "alto" que a tela, a altura dita a escala.
-        // A largura será cortada.
-        clipper.style.height = "100vh"; // Ocupa 100% da altura da tela
-        clipper.style.width = `calc(100vh * ${contentAspectRatio})`; // Largura proporcional
-      }
-    }
-
-    // Executa a função quando a página carrega e quando é redimensionada
-    window.onload = scaleToFill;
-    window.onresize = scaleToFill;
-  </script>
 
 </body>
 </html>
