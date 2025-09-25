@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Sem Zoom</title>
+  <title>Digital Signage - API Google Sheets</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -39,8 +39,7 @@
     }
 
     /* 
-      Contêiner simples que ocupa toda a tela
-      SEM zoom, SEM transformações complexas
+      Contêiner que ocupa toda a tela
     */
     #container {
       position: fixed;
@@ -49,24 +48,39 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     /* 
-      O iframe simples, sem dimensões fixas
-      Deixa o Google Sheets se adaptar naturalmente
+      Tabela customizada que replica o layout do Google Sheets
     */
-    #sheetFrame {
-      border: none;
+    #customTable {
       width: 100%;
       height: 100%;
-      
-      /* Remove qualquer margem ou padding que possa existir */
-      margin: 0;
-      padding: 0;
-      
-      /* Garante que o iframe ocupe todo o espaço disponível */
-      display: block;
+      border-collapse: collapse;
+      font-size: 12px;
+      color: white;
     }
+
+    #customTable td {
+      border: 1px solid #333;
+      padding: 4px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    /* Cores das loterias (replicando o Google Sheets) */
+    .mega-sena { background-color: #0f7b0f; }
+    .timemania { background-color: #ffd700; color: #000; }
+    .super-sete { background-color: #90ee90; color: #000; }
+    .dupla-sena { background-color: #8b0000; }
+    .dia-sorte { background-color: #ffa500; color: #000; }
+    .loteca { background-color: #dc143c; }
+    .lotomania { background-color: #ff8c00; color: #000; }
+    .lotofacil { background-color: #9932cc; }
+    .quina { background-color: #4169e1; }
+    .milionaria { background-color: #191970; }
 
     /* Indicador de última atualização */
     #updateIndicator {
@@ -86,13 +100,22 @@
     #updateIndicator.show {
       opacity: 1;
     }
+
+    /* Mensagem de erro */
+    #errorMessage {
+      color: #ff6b6b;
+      text-align: center;
+      padding: 20px;
+      font-size: 18px;
+      display: none;
+    }
   </style>
 </head>
 <body>
 
   <!-- Tela de carregamento -->
   <div id="loadingScreen">
-    Carregando tabela de loterias...
+    Carregando dados das loterias...
   </div>
 
   <!-- Indicador de atualização -->
@@ -100,25 +123,119 @@
     Última atualização: <span id="updateTime"></span>
   </div>
 
+  <!-- Mensagem de erro -->
+  <div id="errorMessage">
+    Erro ao carregar dados. Tentando novamente...
+  </div>
+
   <!-- Contêiner principal -->
   <div id="container">
-    <iframe id="sheetFrame"
-      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false">
-    </iframe>
+    <table id="customTable">
+      <!-- Os dados serão inseridos aqui via JavaScript -->
+    </table>
   </div>
 
   <script>
     // Elementos DOM
-    const loadingScreen = document.getElementById("loadingScreen" );
-    const iframe = document.getElementById("sheetFrame");
+    const loadingScreen = document.getElementById("loadingScreen");
+    const customTable = document.getElementById("customTable");
     const updateIndicator = document.getElementById("updateIndicator");
     const updateTime = document.getElementById("updateTime");
+    const errorMessage = document.getElementById("errorMessage");
+
+    // URL da planilha publicada em formato CSV
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pub?gid=471953676&single=true&output=csv";
+
+    // Função para buscar dados da planilha
+    async function fetchSheetData( ) {
+      try {
+        console.log("Buscando dados da planilha...");
+        
+        const response = await fetch(SHEET_CSV_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const csvText = await response.text();
+        console.log("Dados CSV recebidos:", csvText.substring(0, 200) + "...");
+        
+        return parseCSV(csvText);
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+        showError("Erro ao carregar dados da planilha");
+        return null;
+      }
+    }
+
+    // Função para converter CSV em array
+    function parseCSV(csvText) {
+      const lines = csvText.split('\n');
+      const data = [];
+      
+      for (let line of lines) {
+        if (line.trim()) {
+          // Simples parser CSV (pode precisar de ajustes dependendo do formato)
+          const row = line.split(',').map(cell => cell.replace(/"/g, '').trim());
+          data.push(row);
+        }
+      }
+      
+      return data;
+    }
+
+    // Função para renderizar a tabela
+    function renderTable(data) {
+      if (!data || data.length === 0) {
+        showError("Nenhum dado encontrado");
+        return;
+      }
+
+      let html = "";
+      
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        html += "<tr>";
+        
+        for (let j = 0; j < row.length; j++) {
+          const cell = row[j];
+          let className = "";
+          
+          // Aplica classes CSS baseadas no conteúdo (simplificado)
+          if (cell.toLowerCase().includes("mega")) className = "mega-sena";
+          else if (cell.toLowerCase().includes("time")) className = "timemania";
+          else if (cell.toLowerCase().includes("super")) className = "super-sete";
+          else if (cell.toLowerCase().includes("dupla")) className = "dupla-sena";
+          else if (cell.toLowerCase().includes("dia")) className = "dia-sorte";
+          else if (cell.toLowerCase().includes("loteca")) className = "loteca";
+          else if (cell.toLowerCase().includes("lotomania")) className = "lotomania";
+          else if (cell.toLowerCase().includes("lotofacil")) className = "lotofacil";
+          else if (cell.toLowerCase().includes("quina")) className = "quina";
+          else if (cell.toLowerCase().includes("milion")) className = "milionaria";
+          
+          html += `<td class="${className}">${cell}</td>`;
+        }
+        
+        html += "</tr>";
+      }
+      
+      customTable.innerHTML = html;
+      console.log("Tabela renderizada com sucesso");
+    }
+
+    // Função para mostrar erro
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = "block";
+      
+      setTimeout(() => {
+        errorMessage.style.display = "none";
+      }, 5000);
+    }
 
     // Função para esconder a tela de carregamento
     function hideLoadingScreen() {
       loadingScreen.classList.add("hidden");
       
-      // Remove a tela de carregamento após a transição
       setTimeout(() => {
         loadingScreen.style.display = "none";
       }, 500);
@@ -133,7 +250,6 @@
       });
       updateTime.textContent = timeString;
       
-      // Mostra o indicador por 3 segundos
       updateIndicator.classList.add("show");
       setTimeout(() => {
         updateIndicator.classList.remove("show");
@@ -141,14 +257,25 @@
     }
 
     // Função principal de inicialização
-    function initialize() {
-      updateTimeIndicator();
+    async function initialize() {
+      console.log("Inicializando aplicação...");
       
-      // Esconde a tela de carregamento após um delay
-      setTimeout(hideLoadingScreen, 2000);
+      const data = await fetchSheetData();
       
-      console.log("Inicialização simples - sem zoom, sem transformações");
-      console.log(`Tela: ${window.innerWidth}x${window.innerHeight}`);
+      if (data) {
+        renderTable(data);
+        updateTimeIndicator();
+      } else {
+        // Se falhar, volta para o iframe como fallback
+        console.log("Fallback para iframe...");
+        container.innerHTML = `
+          <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false"
+                  style="border: none; width: 100%; height: 100%; margin: 0; padding: 0; display: block;">
+          </iframe>
+        `;
+      }
+      
+      hideLoadingScreen( );
     }
 
     // Event listeners
@@ -156,27 +283,9 @@
 
     // Auto-reload a cada 5 minutos
     setInterval(function() {
-      console.log("Recarregando página para atualizar dados...");
-      window.location.reload();
-    }, 5 * 60 * 1000); // 5 minutos
-
-    // Detecta quando o iframe carrega
-    iframe.addEventListener("load", function() {
-      console.log("Iframe carregado - abordagem simples");
-      // Se já passou 1 segundo, esconde o loading
-      setTimeout(() => {
-        if (!loadingScreen.classList.contains("hidden")) {
-          hideLoadingScreen();
-        }
-      }, 1000);
-    });
-
-    // Tratamento de erros
-    window.addEventListener("error", function(e) {
-      console.error("Erro detectado:", e.error);
-      // Em caso de erro, ainda esconde o loading após um tempo
-      setTimeout(hideLoadingScreen, 3000);
-    });
+      console.log("Recarregando dados...");
+      initialize();
+    }, 5 * 60 * 1000);
   </script>
 
 </body>
