@@ -2,9 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Tabela de Signage - Preenchimento Total</title>
+  <title>Tabela de Signage - Solução Flexível</title>
   <style>
-    /* Remove margens e esconde barras de rolagem */
     html, body {
       margin: 0;
       padding: 0;
@@ -15,50 +14,40 @@
     }
 
     /* 
-      O contêiner que fará o recorte.
-      Agora ele vai ocupar 100% da tela, sem se preocupar com a proporção.
+      Este contêiner vai "espremer" o iframe verticalmente
+      para cortar o cabeçalho e o rodapé.
     */
     #clipper {
+      width: 100%;
+      height: 100%;
       position: relative;
-      width: 100%; /* Ocupa 100% da largura do body */
-      height: 100%; /* Ocupa 100% da altura do body */
-      overflow: hidden; /* Essencial para "cortar" o que está fora */
     }
 
-    /* 
-      O iframe que carrega a planilha.
-      Vamos usar transform: scale() para esticá-lo para preencher o #clipper.
-    */
     #clipper iframe {
       border: none;
       position: absolute;
       
-      /* Dimensões originais da planilha publicada */
-      width: 1795px;
-      height: 1013px;
-      
-      /* Puxa o iframe para cima para esconder o cabeçalho */
-      top: -40px;
-      left: 0;
-      
       /* 
-        A mágica acontece aqui:
-        - Define a origem da transformação no canto superior esquerdo.
-        - Usa scaleX() e scaleY() para esticar o iframe de forma independente
-          para preencher o contêiner #clipper.
+        A MÁGICA ESTÁ AQUI:
+        - top: -40px -> Puxa o iframe 40px para cima, escondendo o cabeçalho.
+        - left: 0 -> Alinha na esquerda.
+        - width: 100% -> Força o iframe a ter 100% da largura da tela.
+        - height: calc(100% + 80px) -> Aumenta a altura do iframe para compensar
+          o que foi cortado em cima (40px) e o que seria cortado embaixo (40px).
+          Isso garante que o conteúdo da tabela preencha a altura visível.
       */
-      transform-origin: top left;
-      transform: scaleX(calc(100vw / 1795px)) scaleY(calc(100vh / (1013px - 80px)));
+      top: -40px; 
+      left: 0;
+      width: 100%;
+      height: calc(100% + 80px); /* 40px para o topo + 40px para o rodapé */
     }
   </style>
 </head>
 <body>
-
   <div id="clipper">
     <iframe id="sheetFrame"
       src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false">
     </iframe>
   </div>
-
 </body>
 </html>
