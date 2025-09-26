@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Abordagem Canva (Proporção Fixa)</title>
+  <title>Digital Signage - Abordagem Canva</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -147,7 +147,7 @@
       // Ajusta a posição do iframe para cortar o cabeçalho e centralizar a parte útil
       // O iframe é superdimensionado, então precisamos mover sua origem
       const HEADER_HEIGHT_PX = 29; // Altura do cabeçalho a ser cortado
-      const FOOTER_HEIGHT_PX = 50; // Ajuste fino para o rodapé
+      const FOOTER_HEIGHT_PX = 40; // Ajuste fino para o rodapé (reduzido para tentar eliminar barra branca)
 
       // A posição final do iframe deve ser tal que a parte útil (sem cabeçalho/rodapé)
       // esteja centralizada e escalada corretamente.
@@ -155,8 +155,8 @@
       
       // Calcula a posição do topo do iframe para que o conteúdo comece no topo do clipper
       // e o cabeçalho seja cortado.
-      // Adicionamos um pequeno ajuste manual (ex: +5px) para deslocar ligeiramente para baixo
-      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale) + (5 * scale); // Ajuste vertical para deslocar um pouco para baixo
+      // Adicionamos um pequeno ajuste manual (ex: +10px) para deslocar ligeiramente para baixo
+      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale) + (10 * scale); // Ajuste vertical para deslocar um pouco para baixo
       const iframeLeft = offsetX; 
 
       // Aplica o scale e a translação ao iframe
