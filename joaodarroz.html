@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Digital Signage - Abordagem Canva</title>
+  <title>Digital Signage - Abordagem Canva (Proporção Fixa)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Remove margens e configura a página para tela cheia */
@@ -48,14 +48,14 @@
       height: 2000px;  /* Ex: 2000px, maior que a altura da planilha */
       
       /* URL da planilha publicada */
-      src: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3Uhar1s1oGNIMpLX2BQwI6PPZ28hEp6UqG-9ELGgdlvqyOwHHxiMitT0sUV5Fi6ugJ2UeV1E_sauv/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
+      src: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
 
       /* 
         Ajustamos a posição do iframe para que a parte útil da planilha
         fique visível no centro do #clipper, cortando o cabeçalho e rodapé.
         Estes valores precisarão de ajuste fino.
       */
-      /* top: -100px;  /* Exemplo: move o iframe 100px para cima para cortar o cabeçalho */
+      top: -100px;  /* Exemplo: move o iframe 100px para cima para cortar o cabeçalho */
       left: -200px; /* Exemplo: move o iframe 200px para a esquerda para centralizar */
     }
 
@@ -98,7 +98,7 @@
     const sheetFrame = document.getElementById("sheetFrame");
 
     // URL da planilha publicada
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTOTFC_1GFgzJXd8lBR5ON5f8xQUn09vm8DR8FlA4n8ffaPknsTw1YQhhxSIW4Yz1Ybeu_OgqAMT12/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT3Uhar1s1oGNIMpLX2BQwI6PPZ28hEp6UqG-9ELGgdlvqyOwHHxiMitT0sUV5Fi6ugJ2UeV1E_sauv/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
 
     // Função para ajustar a posição do iframe
     function adjustIframePosition( ) {
@@ -116,13 +116,25 @@
       // Dimensões da parte útil da planilha (estimativa baseada na análise visual)
       // A planilha tem aproximadamente 1788px de largura e 984px de altura útil
       const USABLE_SHEET_WIDTH = 1788;
-      const USABLE_SHEET_HEIGHT = 1013; // 1013 - 29 (cabeçalho) - 20 (rodapé)
+      const USABLE_SHEET_HEIGHT = 984; // 1013 - 29 (cabeçalho) - 20 (rodapé)
 
       // Calcula o fator de escala para que a parte útil da planilha caiba na viewport
-      // Usamos Math.min para garantir que toda a tabela seja visível, com faixas pretas se necessário
-      const scaleX = clipperWidth / USABLE_SHEET_WIDTH;
-      const scaleY = clipperHeight / USABLE_SHEET_HEIGHT;
-      const scale = Math.min(scaleX, scaleY);
+      // Priorizamos a manutenção da proporção para evitar distorção da imagem.
+      const sheetAspectRatio = USABLE_SHEET_WIDTH / USABLE_SHEET_HEIGHT;
+      const viewportAspectRatio = clipperWidth / clipperHeight;
+
+      let scale;
+      if (viewportAspectRatio > sheetAspectRatio) {
+        // Viewport é mais larga que a planilha, ajustar pela altura
+        scale = clipperHeight / USABLE_SHEET_HEIGHT;
+      } else {
+        // Viewport é mais alta que a planilha, ajustar pela largura
+        scale = clipperWidth / USABLE_SHEET_WIDTH;
+      }
+
+      // Adiciona um fator de ajuste para garantir que o conteúdo preencha bem
+      // e para compensar pequenas diferenças. Pode ser ajustado (ex: 1.01 para 1% a mais)
+      scale *= 1.005; // Pequeno overscale para garantir preenchimento e evitar barras finas
 
       // Calcula o tamanho que a parte útil da planilha terá após o scale
       const scaledUsableWidth = USABLE_SHEET_WIDTH * scale;
@@ -134,8 +146,8 @@
 
       // Ajusta a posição do iframe para cortar o cabeçalho e centralizar a parte útil
       // O iframe é superdimensionado, então precisamos mover sua origem
-      // const HEADER_HEIGHT_PX = 29; // Altura do cabeçalho a ser cortado
-      // const FOOTER_HEIGHT_PX = 50; // Ajuste fino para o rodapé 
+      const HEADER_HEIGHT_PX = 29; // Altura do cabeçalho a ser cortado
+      const FOOTER_HEIGHT_PX = 50; // Ajuste fino para o rodapé
 
       // A posição final do iframe deve ser tal que a parte útil (sem cabeçalho/rodapé)
       // esteja centralizada e escalada corretamente.
@@ -196,5 +208,3 @@
 
 </body>
 </html>
-
-porque esse codigo esta redimensionando e escalando a imagem que está na tabela embedada?
