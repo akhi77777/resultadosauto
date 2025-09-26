@@ -119,22 +119,10 @@
       const USABLE_SHEET_HEIGHT = 984; // 1013 - 29 (cabeçalho) - 20 (rodapé)
 
       // Calcula o fator de escala para que a parte útil da planilha caiba na viewport
-      // Priorizamos a manutenção da proporção para evitar distorção da imagem.
-      const sheetAspectRatio = USABLE_SHEET_WIDTH / USABLE_SHEET_HEIGHT;
-      const viewportAspectRatio = clipperWidth / clipperHeight;
-
-      let scale;
-      if (viewportAspectRatio > sheetAspectRatio) {
-        // Viewport é mais larga que a planilha, ajustar pela altura
-        scale = clipperHeight / USABLE_SHEET_HEIGHT;
-      } else {
-        // Viewport é mais alta que a planilha, ajustar pela largura
-        scale = clipperWidth / USABLE_SHEET_WIDTH;
-      }
-
-      // Adiciona um fator de ajuste para garantir que o conteúdo preencha bem
-      // e para compensar pequenas diferenças. Pode ser ajustado (ex: 1.01 para 1% a mais)
-      scale *= 1.005; // Pequeno overscale para garantir preenchimento e evitar barras finas
+      // Usamos Math.min para garantir que toda a tabela seja visível, com faixas pretas se necessário
+      const scaleX = clipperWidth / USABLE_SHEET_WIDTH;
+      const scaleY = clipperHeight / USABLE_SHEET_HEIGHT;
+      const scale = Math.min(scaleX, scaleY);
 
       // Calcula o tamanho que a parte útil da planilha terá após o scale
       const scaledUsableWidth = USABLE_SHEET_WIDTH * scale;
@@ -147,7 +135,7 @@
       // Ajusta a posição do iframe para cortar o cabeçalho e centralizar a parte útil
       // O iframe é superdimensionado, então precisamos mover sua origem
       const HEADER_HEIGHT_PX = 29; // Altura do cabeçalho a ser cortado
-      const FOOTER_HEIGHT_PX = 40; // Ajuste fino para o rodapé (reduzido para tentar eliminar barra branca)
+      const FOOTER_HEIGHT_PX = 50; // Ajuste fino para o rodapé
 
       // A posição final do iframe deve ser tal que a parte útil (sem cabeçalho/rodapé)
       // esteja centralizada e escalada corretamente.
@@ -155,8 +143,8 @@
       
       // Calcula a posição do topo do iframe para que o conteúdo comece no topo do clipper
       // e o cabeçalho seja cortado.
-      // Adicionamos um pequeno ajuste manual (ex: +10px) para deslocar ligeiramente para baixo
-      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale) + (10 * scale); // Ajuste vertical para deslocar um pouco para baixo
+      // Adicionamos um pequeno ajuste manual (ex: +5px) para deslocar ligeiramente para baixo
+      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale) + (5 * scale); // Ajuste vertical para deslocar um pouco para baixo
       const iframeLeft = offsetX; 
 
       // Aplica o scale e a translação ao iframe
