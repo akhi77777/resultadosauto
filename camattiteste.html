@@ -5,36 +5,61 @@
   <title>TABELA RESULTADOS CAIXA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* Remove margens e configura a página para tela cheia */
     html, body {
       margin: 0;
       padding: 0;
       width: 100vw;
       height: 100vh;
-      overflow: hidden; /* garante que nunca apareçam barras no body */
+      overflow: hidden;
       background: #000;
       font-family: Arial, sans-serif;
     }
 
+    /* 
+      Contêiner principal que ocupa toda a tela e recorta o conteúdo.
+      Usamos flexbox para centralizar o conteúdo visível.
+    */
     #clipper {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden; /* recorta o iframe */
+      overflow: hidden; /* ESSENCIAL: Recorta o iframe superdimensionado */
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
+    /* 
+      O iframe que carrega a planilha.
+      Ele terá dimensões MUITO MAIORES que a tela para garantir que o Google Sheets
+      renderize todo o seu conteúdo sem barras de rolagem internas.
+      Ajustamos sua posição para mostrar apenas a parte desejada.
+    */
     #sheetFrame {
       border: none;
       position: absolute;
-      width: 2500px;
-      height: 2000px;
-      left: -200px;
+      
+      /* Dimensões superdimensionadas para o iframe */
+      /* Estes valores são arbitrários, mas grandes o suficiente para conter a planilha */
+      width: 2500px;   /* Ex: 2500px, maior que a largura da planilha */
+      height: 2000px;  /* Ex: 2000px, maior que a altura da planilha */
+      
+      /* URL da planilha publicada */
+      src: "hhttps://docs.google.com/spreadsheets/d/e/2PACX-1vQg2AkHM6QztwffD789pxF6yOqYF0VPeOcHjuM8NsHMcONkh-Ga7_7eimkjbCVzAqiMe5cRE-wjp6er/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
+
+      /* 
+        Ajustamos a posição do iframe para que a parte útil da planilha
+        fique visível no centro do #clipper, cortando o cabeçalho e rodapé.
+        Estes valores precisarão de ajuste fino.
+      */
+      /* top: -100px;  /* Exemplo: move o iframe 100px para cima para cortar o cabeçalho */
+      left: -200px; /* Exemplo: move o iframe 200px para a esquerda para centralizar */
     }
 
+    /* Indicador de última atualização */
     #updateIndicator {
       position: fixed;
       bottom: 10px;
@@ -56,10 +81,13 @@
 </head>
 <body>
 
+  <!-- Contêiner que recorta o iframe -->
   <div id="clipper">
-    <iframe id="sheetFrame"></iframe>
+    <iframe id="sheetFrame">
+    </iframe>
   </div>
 
+  <!-- Indicador de atualização -->
   <div id="updateIndicator">
     Última atualização: <span id="updateTime"></span>
   </div>
@@ -69,46 +97,82 @@
     const updateTime = document.getElementById("updateTime");
     const sheetFrame = document.getElementById("sheetFrame");
 
+    // URL da planilha publicada
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQg2AkHM6QztwffD789pxF6yOqYF0VPeOcHjuM8NsHMcONkh-Ga7_7eimkjbCVzAqiMe5cRE-wjp6er/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
 
-    function adjustIframePosition() {
+    // Função para ajustar a posição do iframe
+    function adjustIframePosition( ) {
       const clipper = document.getElementById("clipper");
+      const sheetFrame = document.getElementById("sheetFrame");
+
+      // Dimensões do clipper (viewport)
       const clipperWidth = clipper.offsetWidth;
       const clipperHeight = clipper.offsetHeight;
 
-      const USABLE_SHEET_WIDTH = 1788;
-      const USABLE_SHEET_HEIGHT = 984;
+      // Dimensões do iframe (superdimensionado)
+      const iframeWidth = sheetFrame.offsetWidth;
+      const iframeHeight = sheetFrame.offsetHeight;
 
+      // Dimensões da parte útil da planilha (estimativa baseada na análise visual)
+      // A planilha tem aproximadamente 1788px de largura e 984px de altura útil
+      const USABLE_SHEET_WIDTH = 1788;
+      const USABLE_SHEET_HEIGHT = 984; // 1013 - 29 (cabeçalho) - 20 (rodapé)
+
+      // Calcula o fator de escala para que a parte útil da planilha caiba na viewport
+      // Priorizamos a manutenção da proporção para evitar distorção da imagem.
       const sheetAspectRatio = USABLE_SHEET_WIDTH / USABLE_SHEET_HEIGHT;
       const viewportAspectRatio = clipperWidth / clipperHeight;
 
       let scale;
       if (viewportAspectRatio > sheetAspectRatio) {
+        // Viewport é mais larga que a planilha, ajustar pela altura
         scale = clipperHeight / USABLE_SHEET_HEIGHT;
       } else {
+        // Viewport é mais alta que a planilha, ajustar pela largura
         scale = clipperWidth / USABLE_SHEET_WIDTH;
       }
 
-      // 👇 ajuste para evitar barras de rolagem
-      scale *= 0.99;
+      // Adiciona um fator de ajuste para garantir que o conteúdo preencha bem
+      // e para compensar pequenas diferenças. Pode ser ajustado (ex: 1.01 para 1% a mais)
+      scale *= 1.005; // Pequeno overscale para garantir preenchimento e evitar barras finas
 
+      // Calcula o tamanho que a parte útil da planilha terá após o scale
       const scaledUsableWidth = USABLE_SHEET_WIDTH * scale;
       const scaledUsableHeight = USABLE_SHEET_HEIGHT * scale;
 
+      // Calcula a posição para centralizar a parte útil da planilha dentro do clipper
       const offsetX = (clipperWidth - scaledUsableWidth) / 2;
       const offsetY = (clipperHeight - scaledUsableHeight) / 2;
 
-      const HEADER_HEIGHT_PX = 29;
+      // Ajusta a posição do iframe para cortar o cabeçalho e centralizar a parte útil
+      // O iframe é superdimensionado, então precisamos mover sua origem
+      const HEADER_HEIGHT_PX = 29; // Altura do cabeçalho a ser cortado
+      const FOOTER_HEIGHT_PX = 50; // Ajuste fino para o rodapé
 
-      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale);
-      const iframeLeft = offsetX;
+      // A posição final do iframe deve ser tal que a parte útil (sem cabeçalho/rodapé)
+      // esteja centralizada e escalada corretamente.
+      // Para isso, o iframe inteiro (superdimensionado) precisa ser movido.
+      
+      // Calcula a posição do topo do iframe para que o conteúdo comece no topo do clipper
+      // e o cabeçalho seja cortado.
+      // Adicionamos um pequeno ajuste manual (ex: +5px) para deslocar ligeiramente para baixo
+      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale) + (5 * scale); // Ajuste vertical para deslocar um pouco para baixo
+      const iframeLeft = offsetX; 
 
+      // Aplica o scale e a translação ao iframe
       sheetFrame.style.transform = `scale(${scale})`;
       sheetFrame.style.transformOrigin = `top left`;
       sheetFrame.style.top = `${iframeTop}px`;
       sheetFrame.style.left = `${iframeLeft}px`;
+
+      // Ajusta as dimensões do iframe para que ele seja grande o suficiente para conter o conteúdo
+      // e o Google Sheets não adicione barras de rolagem internas.
+      // Estes valores são os valores são os originais do iframe, mas escalados.
+      sheetFrame.style.width = `${SHEET_ORIGINAL_WIDTH}px`;
+      sheetFrame.style.height = `${SHEET_ORIGINAL_HEIGHT}px`;
     }
 
+    // Função para atualizar o indicador de tempo
     function updateTimeIndicator() {
       const now = new Date();
       const timeString = now.toLocaleTimeString("pt-BR", { 
@@ -123,19 +187,23 @@
       }, 3000);
     }
 
+    // Inicializa o indicador de tempo e o zoom ao carregar
     window.addEventListener("load", () => {
-      sheetFrame.src = SHEET_URL;
+      sheetFrame.src = SHEET_URL; // Define a URL do iframe aqui para garantir que o JS já esteja pronto
       sheetFrame.onload = () => {
         adjustIframePosition();
         updateTimeIndicator();
       };
     });
 
+    // Reaplica o zoom se a janela for redimensionada
     window.addEventListener("resize", adjustIframePosition);
 
+    // Auto-reload a cada 5 minutos com indicador
     setInterval(function() {
+      console.log("Recarregando página para atualizar dados...");
       window.location.reload();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000); // 5 minutos em milissegundos
   </script>
 
 </body>
