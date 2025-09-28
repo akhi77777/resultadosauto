@@ -10,7 +10,7 @@
       padding: 0;
       width: 100vw;
       height: 100vh;
-      overflow: hidden; /* bloqueia rolagem da página */
+      overflow: hidden; /* garante que nunca apareçam barras no body */
       background: #000;
       font-family: Arial, sans-serif;
     }
@@ -21,7 +21,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden; /* corta qualquer sobra do iframe */
+      overflow: hidden; /* recorta o iframe */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -30,14 +30,16 @@
     #sheetFrame {
       border: none;
       position: absolute;
-      transform-origin: top left;
+      width: 2500px;
+      height: 2000px;
+      left: -200px;
     }
 
     #updateIndicator {
       position: fixed;
       bottom: 10px;
       right: 10px;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0, 0, 0, 0.7 );
       color: #fff;
       padding: 5px 10px;
       border-radius: 5px;
@@ -46,14 +48,16 @@
       opacity: 0;
       transition: opacity 0.3s ease;
     }
+
     #updateIndicator.show {
       opacity: 1;
     }
   </style>
 </head>
 <body>
+
   <div id="clipper">
-    <iframe id="sheetFrame" scrolling="no"></iframe>
+    <iframe id="sheetFrame"></iframe>
   </div>
 
   <div id="updateIndicator">
@@ -67,50 +71,72 @@
 
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQg2AkHM6QztwffD789pxF6yOqYF0VPeOcHjuM8NsHMcONkh-Ga7_7eimkjbCVzAqiMe5cRE-wjp6er/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
 
-    // tamanho original da planilha publicada
-    const ORIGINAL_WIDTH = 1795;
-    const ORIGINAL_HEIGHT = 1013;
+    function adjustIframePosition() {
+      const clipper = document.getElementById("clipper");
+      const clipperWidth = clipper.offsetWidth;
+      const clipperHeight = clipper.offsetHeight;
 
-    function adjustIframe() {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+      const USABLE_SHEET_WIDTH = 1788;
+      const USABLE_SHEET_HEIGHT = 984;
 
-      const scaleX = vw / ORIGINAL_WIDTH;
-      const scaleY = vh / ORIGINAL_HEIGHT;
-      const scale = Math.min(scaleX, scaleY);
+      const sheetAspectRatio = USABLE_SHEET_WIDTH / USABLE_SHEET_HEIGHT;
+      const viewportAspectRatio = clipperWidth / clipperHeight;
 
-      sheetFrame.style.width = ORIGINAL_WIDTH + "px";
-      sheetFrame.style.height = ORIGINAL_HEIGHT + "px";
+      let scale;
+      if (viewportAspectRatio > sheetAspectRatio) {
+        scale = clipperHeight / USABLE_SHEET_HEIGHT;
+      } else {
+        scale = clipperWidth / USABLE_SHEET_WIDTH;
+      }
+
+      // 👇 ajuste para evitar barras de rolagem
+      scale *= 0.99;
+
+      const scaledUsableWidth = USABLE_SHEET_WIDTH * scale;
+      const scaledUsableHeight = USABLE_SHEET_HEIGHT * scale;
+
+      const offsetX = (clipperWidth - scaledUsableWidth) / 2;
+      const offsetY = (clipperHeight - scaledUsableHeight) / 2;
+
+      const HEADER_HEIGHT_PX = 29;
+
+      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale);
+      const iframeLeft = offsetX;
+
       sheetFrame.style.transform = `scale(${scale})`;
-
-      // centraliza
-      const offsetX = (vw - ORIGINAL_WIDTH * scale) / 2;
-      const offsetY = (vh - ORIGINAL_HEIGHT * scale) / 2;
-      sheetFrame.style.left = offsetX + "px";
-      sheetFrame.style.top = offsetY + "px";
+      sheetFrame.style.transformOrigin = `top left`;
+      sheetFrame.style.top = `${iframeTop}px`;
+      sheetFrame.style.left = `${iframeLeft}px`;
     }
 
     function updateTimeIndicator() {
       const now = new Date();
-      updateTime.textContent = now.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit"
+      const timeString = now.toLocaleTimeString("pt-BR", { 
+        hour: "2-digit", 
+        minute: "2-digit" 
       });
+      updateTime.textContent = timeString;
+      
       updateIndicator.classList.add("show");
-      setTimeout(() => updateIndicator.classList.remove("show"), 3000);
+      setTimeout(() => {
+        updateIndicator.classList.remove("show");
+      }, 3000);
     }
 
     window.addEventListener("load", () => {
       sheetFrame.src = SHEET_URL;
       sheetFrame.onload = () => {
-        adjustIframe();
+        adjustIframePosition();
         updateTimeIndicator();
       };
     });
 
-    window.addEventListener("resize", adjustIframe);
+    window.addEventListener("resize", adjustIframePosition);
 
-    setInterval(() => window.location.reload(), 5 * 60 * 1000);
+    setInterval(function() {
+      window.location.reload();
+    }, 5 * 60 * 1000);
   </script>
+
 </body>
 </html>
