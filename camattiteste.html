@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TABELA RESULTADOS CAIXA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden; /* bloqueia rolagem da página */
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    #clipper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* corta qualquer sobra do iframe */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #sheetFrame {
+      border: none;
+      position: absolute;
+      transform-origin: top left;
+    }
+
+    #updateIndicator {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #updateIndicator.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="clipper">
+    <iframe id="sheetFrame" scrolling="no"></iframe>
+  </div>
+
+  <div id="updateIndicator">
+    Última atualização: <span id="updateTime"></span>
+  </div>
+
+  <script>
+    const updateIndicator = document.getElementById("updateIndicator");
+    const updateTime = document.getElementById("updateTime");
+    const sheetFrame = document.getElementById("sheetFrame");
+
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQg2AkHM6QztwffD789pxF6yOqYF0VPeOcHjuM8NsHMcONkh-Ga7_7eimkjbCVzAqiMe5cRE-wjp6er/pubhtml?gid=471953676&single=true&widget=false&headers=false&chrome=false";
+
+    // tamanho original da planilha publicada
+    const ORIGINAL_WIDTH = 1795;
+    const ORIGINAL_HEIGHT = 1013;
+
+    function adjustIframe() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      const scaleX = vw / ORIGINAL_WIDTH;
+      const scaleY = vh / ORIGINAL_HEIGHT;
+      const scale = Math.min(scaleX, scaleY);
+
+      sheetFrame.style.width = ORIGINAL_WIDTH + "px";
+      sheetFrame.style.height = ORIGINAL_HEIGHT + "px";
+      sheetFrame.style.transform = `scale(${scale})`;
+
+      // centraliza
+      const offsetX = (vw - ORIGINAL_WIDTH * scale) / 2;
+      const offsetY = (vh - ORIGINAL_HEIGHT * scale) / 2;
+      sheetFrame.style.left = offsetX + "px";
+      sheetFrame.style.top = offsetY + "px";
+    }
+
+    function updateTimeIndicator() {
+      const now = new Date();
+      updateTime.textContent = now.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+      updateIndicator.classList.add("show");
+      setTimeout(() => updateIndicator.classList.remove("show"), 3000);
+    }
+
+    window.addEventListener("load", () => {
+      sheetFrame.src = SHEET_URL;
+      sheetFrame.onload = () => {
+        adjustIframe();
+        updateTimeIndicator();
+      };
+    });
+
+    window.addEventListener("resize", adjustIframe);
+
+    setInterval(() => window.location.reload(), 5 * 60 * 1000);
+  </script>
+</body>
+</html>
