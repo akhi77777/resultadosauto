@@ -5,41 +5,44 @@
   <title>TABELA RESULTADOS CAIXA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* Configurações básicas para tela cheia */
+    /* 1. Garante que a página ocupe toda a tela, sem margens ou barras de rolagem */
     html, body {
       margin: 0;
       padding: 0;
       width: 100vw;
       height: 100vh;
-      overflow: hidden; /* Impede barras de rolagem na página */
-      background: #000;
-      font-family: Arial, sans-serif;
-      /* Centraliza o contêiner do iframe */
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      overflow: hidden; /* ESSENCIAL: Esconde o que vaza do iframe */
+      background: #fff; /* Fundo branco para combinar com a planilha */
     }
 
-    /* Contêiner que vai segurar e escalar o iframe */
-    #container {
-      /* Define o tamanho do contêiner. Usaremos a resolução da sua TV (Full HD) como base. */
-      width: 1920px;
-      height: 1080px;
-      
-      /* A mágica acontece aqui: escalamos o contêiner (e seu conteúdo) para caber na tela */
-      transform: scale(var(--zoom-level, 0.71)); /* O valor do zoom será ajustado via JS */
-      transform-origin: center center; /* O zoom é aplicado a partir do centro */
-      
-      /* Garante que o iframe dentro dele não tenha bordas ou problemas de layout */
-      border: none;
-      overflow: hidden;
-    }
-
-    /* O iframe que carrega a planilha */
+    /* 2. O iframe que carrega a planilha */
     #sheetFrame {
+      border: none; /* Remove a borda padrão do iframe */
+      
+      /* 3. A MÁGICA: Transformação para escalar e posicionar o iframe */
+      /* Começamos com o iframe no canto superior esquerdo da tela */
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+      /* Define a origem da transformação para o canto superior esquerdo */
+      transform-origin: top left;
+
+      /* 
+        Ajustes de escala e posição:
+        - scale(1.33): Aumenta o tamanho do iframe em 33%. Este é o "zoom".
+          É o principal valor que você pode ajustar para fazer a tabela caber perfeitamente.
+        - translate(-190px, -80px): Move o iframe para a esquerda e para cima.
+          Isso serve para "cortar" as bordas e centralizar o conteúdo que importa.
+      */
+      transform: scale(1.33) translate(-190px, -80px);
+
+      /* 
+        Garante que o iframe seja grande o suficiente para que, mesmo após o zoom,
+        ele preencha a tela inteira sem mostrar bordas.
+      */
       width: 100%;
       height: 100%;
-      border: none;
     }
 
     /* Indicador de última atualização (sem alterações) */
@@ -58,11 +61,14 @@
 </head>
 <body>
 
-  <!-- Contêiner que será escalado -->
-  <div id="container">
-    <iframe id="sheetFrame" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vREcpkPb9guZ_Iq5ZqHK-ceBFpCLM1pMq5lzTlOF4EtagfEUwQND93tEL9h_YjnmkW7XTvU9qUlsCpI/pubhtml?gid=0&single=true&widget=false&headers=false&chrome=false&rm=minimal">
-    </iframe>
-  </div>
+  <!-- 
+    A URL da planilha foi atualizada com "&rm=minimal" para remover o cabeçalho e rodapé do Google,
+    o que simplifica muito o nosso trabalho de posicionamento.
+  -->
+  <iframe 
+    id="sheetFrame" 
+    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vREcpkPb9guZ_Iq5ZqHK-ceBFpCLM1pMq5lzTlOF4EtagfEUwQND93tEL9h_YjnmkW7XTvU9qUlsCpI/pubhtml?gid=0&single=true&widget=false&headers=false&chrome=false&rm=minimal">
+  </iframe>
 
   <!-- Indicador de atualização -->
   <div id="updateIndicator">
@@ -70,29 +76,8 @@
   </div>
 
   <script>
-    function adjustZoom( ) {
-      const container = document.getElementById('container');
-      
-      // Dimensões base do nosso contêiner (resolução alvo)
-      const baseWidth = 1920;
-      const baseHeight = 1080;
-
-      // Dimensões atuais da tela (viewport)
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-
-      // Calcula o fator de zoom necessário para que o contêiner caiba na tela
-      // Compara a proporção da largura e da altura e usa o menor valor para não cortar conteúdo
-      const scaleX = screenWidth / baseWidth;
-      const scaleY = screenHeight / baseHeight;
-      const zoomLevel = Math.min(scaleX, scaleY);
-
-      // Define a variável CSS '--zoom-level' com o valor calculado
-      document.documentElement.style.setProperty('--zoom-level', zoomLevel);
-    }
-
     // Função para atualizar o indicador de tempo
-    function updateTimeIndicator() {
+    function updateTimeIndicator( ) {
       const updateIndicator = document.getElementById("updateIndicator");
       const updateTime = document.getElementById("updateTime");
       const now = new Date();
@@ -100,14 +85,10 @@
       updateTime.textContent = timeString;
     }
 
-    // Ajusta o zoom quando a página carrega e quando a janela é redimensionada
-    window.addEventListener("load", () => {
-      adjustZoom();
-      updateTimeIndicator();
-    });
-    window.addEventListener("resize", adjustZoom);
+    // Inicializa o indicador ao carregar a página
+    window.addEventListener("load", updateTimeIndicator);
 
-    // Recarrega a página a cada 5 minutos para buscar novos dados
+    // Recarrega a página a cada 5 minutos
     setInterval(function() {
       console.log("Recarregando página para atualizar dados...");
       window.location.reload();
