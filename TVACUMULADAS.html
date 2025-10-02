@@ -55,8 +55,6 @@
         fique visível no centro do #clipper, cortando o cabeçalho e rodapé.
         Estes valores precisarão de ajuste fino.
       */
-      top: -10px;  /* Exemplo: move o iframe 10px para cima para cortar o cabeçalho */
-      left: -200px; /* Exemplo: move o iframe 200px para a esquerda para centralizar */
     }
 
     /* Indicador de última atualização */
@@ -134,8 +132,8 @@
 
       // Ajusta a posição do iframe para cortar o cabeçalho e centralizar a parte útil
       // O iframe é superdimensionado, então precisamos mover sua origem
-      const HEADER_HEIGHT_PX = 29; // Altura do cabeçalho a ser cortado
-      const FOOTER_HEIGHT_PX = 50; // Ajuste fino para o rodapé
+      const HEADER_HEIGHT_PX = 0; // Altura do cabeçalho a ser cortado
+      const FOOTER_HEIGHT_PX = 0; // Ajuste fino para o rodapé
 
       // A posição final do iframe deve ser tal que a parte útil (sem cabeçalho/rodapé)
       // esteja centralizada e escalada corretamente.
@@ -144,8 +142,8 @@
       // Calcula a posição do topo do iframe para que o conteúdo comece no topo do clipper
       // e o cabeçalho seja cortado.
       // Adicionamos um pequeno ajuste manual (ex: +5px) para deslocar ligeiramente para baixo
-      const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale) + (5 * scale); // Ajuste vertical para deslocar um pouco para baixo
-      const iframeLeft = offsetX; 
+     //  const iframeTop = offsetY - (HEADER_HEIGHT_PX * scale) + (5 * scale); // Ajuste vertical para deslocar um pouco para baixo
+   //  const iframeLeft = offsetX; 
 
       // Aplica o scale e a translação ao iframe
       sheetFrame.style.transform = `scale(${scale})`;
