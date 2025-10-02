@@ -2,50 +2,49 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>TABELA RESULTADOS CAIXA</title>
+  <title>TABELA ACUMULADAS CAIXA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* 1. Garante que a página ocupe toda a tela, sem margens ou barras de rolagem */
+    /* 1. Configura a página para tela cheia, sem margens ou rolagem */
     html, body {
       margin: 0;
       padding: 0;
       width: 100vw;
       height: 100vh;
-      overflow: hidden; /* ESSENCIAL: Esconde o que vaza do iframe */
-      background: #fff; /* Fundo branco para combinar com a planilha */
+      overflow: hidden; /* Essencial: esconde as partes do iframe que vazam da tela */
+      background: #000; /* Fundo escuro para o caso de alguma borda aparecer durante o ajuste */
     }
 
-    /* 2. O iframe que carrega a planilha */
-    #sheetFrame {
-      border: none; /* Remove a borda padrão do iframe */
-      
-      /* 3. A MÁGICA: Transformação para escalar e posicionar o iframe */
-      /* Começamos com o iframe no canto superior esquerdo da tela */
-      position: absolute;
-      top: 0;
-      left: 0;
-      
-      /* Define a origem da transformação para o canto superior esquerdo */
-      transform-origin: top left;
-
-      /* 
-        Ajustes de escala e posição:
-        - scale(1.33): Aumenta o tamanho do iframe em 33%. Este é o "zoom".
-          É o principal valor que você pode ajustar para fazer a tabela caber perfeitamente.
-        - translate(-190px, -80px): Move o iframe para a esquerda e para cima.
-          Isso serve para "cortar" as bordas e centralizar o conteúdo que importa.
-      */
-      transform: scale(1.33) translate(-190px, -80px);
-
-      /* 
-        Garante que o iframe seja grande o suficiente para que, mesmo após o zoom,
-        ele preencha a tela inteira sem mostrar bordas.
-      */
+    /* 2. O contêiner que atua como "janela" ou "recortador" */
+    #clipper {
       width: 100%;
       height: 100%;
+      overflow: hidden;
+      position: relative; /* Necessário para posicionar o iframe dentro dele */
     }
 
-    /* Indicador de última atualização (sem alterações) */
+    /* 3. O iframe que contém a planilha do Google Sheets */
+    #sheetFrame {
+      border: none;
+      position: absolute; /* Posicionamento absoluto em relação ao #clipper */
+      
+      /* Define o tamanho do iframe para ser exatamente o da planilha original.
+         Isso evita que o Google Sheets adicione suas próprias barras de rolagem.
+         Valores aproximados para uma planilha padrão. */
+      width: 1920px;
+      height: 1080px;
+
+      /* 4. A MÁGICA DO AJUSTE FINO - Apenas edite aqui! */
+      transform-origin: top left; /* O zoom e a posição são calculados a partir do canto superior esquerdo */
+      
+      /*
+        - scale(0.75): Este é o "zoom out". Se a tabela estiver muito grande, diminua o valor (ex: 0.7). Se estiver pequena, aumente (ex: 0.8).
+        - translate(-145px, -60px): Move o iframe para a esquerda e para cima para centralizar o conteúdo.
+      */
+      transform: scale(0.75) translate(-145px, -60px);
+    }
+
+    /* Indicador de atualização (sem alterações) */
     #updateIndicator {
       position: fixed;
       bottom: 10px;
@@ -61,34 +60,30 @@
 </head>
 <body>
 
-  <!-- 
-    A URL da planilha foi atualizada com "&rm=minimal" para remover o cabeçalho e rodapé do Google,
-    o que simplifica muito o nosso trabalho de posicionamento.
-  -->
-  <iframe 
-    id="sheetFrame" 
-    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vREcpkPb9guZ_Iq5ZqHK-ceBFpCLM1pMq5lzTlOF4EtagfEUwQND93tEL9h_YjnmkW7XTvU9qUlsCpI/pubhtml?gid=0&single=true&widget=false&headers=false&chrome=false&rm=minimal">
-  </iframe>
+  <div id="clipper">
+    <iframe 
+      id="sheetFrame" 
+      src="https://docs.google.com/spreadsheets/d/e/2PACX-1vREcpkPb9guZ_Iq5ZqHK-ceBFpCLM1pMq5lzTlOF4EtagfEUwQND93tEL9h_YjnmkW7XTvU9qUlsCpI/pubhtml?gid=0&single=true&widget=false&headers=false&chrome=false&rm=minimal">
+    </iframe>
+  </div>
 
-  <!-- Indicador de atualização -->
   <div id="updateIndicator">
     Última atualização: <span id="updateTime"></span>
   </div>
 
   <script>
-    // Função para atualizar o indicador de tempo
+    // O JavaScript não é mais necessário para o layout, apenas para o relógio e o reload.
     function updateTimeIndicator( ) {
-      const updateIndicator = document.getElementById("updateIndicator");
       const updateTime = document.getElementById("updateTime");
-      const now = new Date();
-      const timeString = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-      updateTime.textContent = timeString;
+      if (updateTime) {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        updateTime.textContent = timeString;
+      }
     }
 
-    // Inicializa o indicador ao carregar a página
     window.addEventListener("load", updateTimeIndicator);
 
-    // Recarrega a página a cada 5 minutos
     setInterval(function() {
       console.log("Recarregando página para atualizar dados...");
       window.location.reload();
