@@ -85,9 +85,34 @@ class TestCaixa(unittest.TestCase):
             def erro(_):
                 raise RuntimeError("HTTP 500")
             sucessos, _ = atualizar(["supersete"], pasta=pasta, buscar_fn=erro)
-            self.assertEqual(sucessos, 1)
+            self.assertEqual(sucessos, 0)
             salvo = json.loads((pasta / "supersete" / "ultimo.json").read_text())
             self.assertEqual(salvo["numero"], 918)
+
+    def test_supersete_espelho_com_proveniencia(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pasta = Path(tmp)
+            espelho = {
+                "loteria": "supersete", "concurso": 918,
+                "data": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y"),
+                "dezenas": ["0", "5", "0", "6", "1", "4", "1"],
+                "premiacoes": [
+                    {"descricao": f"{7-i} acertos", "faixa": i + 1,
+                     "ganhadores": i, "valorPremio": float(i*10)}
+                    for i in range(5)
+                ]
+            }
+            def fonte(url):
+                if "herokuapp.com" in url:
+                    return espelho
+                raise RuntimeError("HTTP 500")
+            sucessos, _ = atualizar(["supersete"], pasta=pasta, buscar_fn=fonte)
+            self.assertEqual(sucessos, 1)
+            salvo = json.loads((pasta / "supersete" / "ultimo.json").read_text())
+            self.assertEqual(salvo["listaDezenas"], espelho["dezenas"])
+            self.assertEqual(salvo["numero"], 918)
+            self.assertFalse(salvo["obtidoDiretamenteDaCaixa"])
+            self.assertEqual(salvo["fonteDados"], "espelho-secundario")
 
     def test_ultimo_e_historico(self):
         with tempfile.TemporaryDirectory() as tmp:
