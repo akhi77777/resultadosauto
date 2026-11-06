@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Resultados da CAIXA — API JSON</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#19323d;background:#f2f7fb}
+*{box-sizing:border-box}
+body{margin:0}main{max-width:1120px;margin:0 auto;padding:30px 18px 65px}
+header{padding:16px 0}h1{font-size:clamp(27px,4vw,40px);margin:0 0 8px}
+p{line-height:1.55;color:#465e6b}.actions{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}
+a{color:#006f9f;text-decoration:none;font-weight:600}a:hover{text-decoration:underline}
+.btn{padding:11px 16px;background:#087f72;color:white;border-radius:8px}
+.btn:hover{background:#086e63;text-decoration:none}.badge{color:#516b7b;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:24px}
+.card{padding:18px 19px;border:1px solid #e0e9ef;border-radius:12px;background:white;box-shadow:0 3px 15px #1234 0}
+.card h2{font-size:18px;margin:0 0 7px}.nums{font-size:20px;font-weight:700;color:#087f72;line-height:1.7;overflow-wrap:anywhere;padding:8px 0}
+.sub{color:#5b7381;font-size:13px}.links{display:flex;gap:15px;flex-wrap:wrap;padding-top:8px}
+.notice{padding:14px 17px;background:#e5edf3;border-left:3px solid #8ba5b3;border-radius:5px}
+.pending{border-style:dashed}.pending .nums{color:#667b89;font-size:16px}
+footer{margin-top:25px;color:#60717e;font-size:13px}
+</style>
+</head>
+<body><main>
+<header><h1>Resultados das Loterias CAIXA</h1>
+<p>Consulta aos arquivos JSON armazenados no GitHub. Atualização programada a cada cinco minutos.</p></header>
+<p class="notice">Este é um espelho independente, não uma API oficial. As atualizações podem atrasar e os dados dependem da disponibilidade dos serviços da CAIXA. Para conferir bilhetes e prêmios, consulte os <a href="https://loterias.caixa.gov.br/Paginas/default.aspx">canais oficiais</a>.</p>
+<div class="actions"><a class="btn" href="api/ultimo.json">Todas as modalidades (JSON)</a>
+<a href="https://github.com/akhi77777/resultadosauto/actions/workflows/caixa-api.yml">Ver execução automática no GitHub</a></div>
+<div id="status" class="badge">Consultando arquivos publicados...</div>
+<section id="cards" class="grid" aria-live="polite"></section>
+<footer>Dados públicos do portal Loterias CAIXA. Projeto mantido em GitHub Actions e GitHub Pages.</footer>
+<script>
+const nomes={megasena:"Mega-Sena",lotofacil:"Lotofácil",quina:"Quina",lotomania:"Lotomania",duplasena:"Dupla Sena",timemania:"Timemania",diadesorte:"Dia de Sorte",supersete:"Super Sete",maismilionaria:"+Milionária",federal:"Federal",loteca:"Loteca"};
+const slugs=Object.keys(nomes);
+function link(href,caption){let a=document.createElement("a");a.href=href;a.textContent=caption;return a;}
+async function carregar(){
+const status=document.getElementById("status"),cards=document.getElementById("cards");
+try{
+const r=await fetch("api/ultimo.json?t="+Date.now(),{cache:"no-store"});
+if(!r.ok)throw Error("HTTP "+r.status);
+const json=await r.json();const dados=json.modalidades||{};
+status.textContent="Última gravação: "+new Date(json.atualizadoEm).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"})+" • "+Object.keys(dados).length+" de "+slugs.length+" modalidades disponíveis";
+cards.replaceChildren();
+for(const slug of slugs){
+const d=dados[slug];const card=document.createElement("article");card.className="card"+(d?"":" pending");
+const h=document.createElement("h2");h.textContent=nomes[slug];card.append(h);
+const sub=document.createElement("div");sub.className="sub";sub.textContent=d?"Concurso "+d.numero+" • "+d.dataApuracao:"Aguardando resultado oficial";card.append(sub);
+const n=document.createElement("div");n.className="nums";
+n.textContent=d?(slug==="loteca"?"14 jogos":(d.listaDezenas||[]).join(" · ")||"Veja o JSON"):"Ainda não disponível";
+card.append(n);
+if(d){
+if(slug==="maismilionaria"&&Array.isArray(d.trevosSorteados)){const t=document.createElement("div");t.className="sub";t.textContent="Trevos: "+d.trevosSorteados.join(" e ");card.append(t);}
+const l=document.createElement("div");l.className="links";l.append(link("api/"+slug+"/ultimo.json","Último JSON"),link("api/"+slug+"/"+d.numero+".json","Concurso "+d.numero));card.append(l);
+}
+cards.append(card);
+}
+}catch(e){status.textContent="Não foi possível carregar os resultados. Confira o workflow no GitHub.";}
+}
+carregar();
+setInterval(carregar,5*60*1000);
+</script></main></body></html>
