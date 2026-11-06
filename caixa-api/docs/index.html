@@ -50,6 +50,12 @@ const sub=document.createElement("div");sub.className="sub";sub.textContent=d?"C
 const n=document.createElement("div");n.className="nums";
 n.textContent=d?(slug==="loteca"?"14 jogos":(d.listaDezenas||[]).join(" · ")||"Veja o JSON"):"Ainda não disponível";
 card.append(n);
+if(d&&d.fonteDados==="espelho-secundario"){
+  const origem=document.createElement("div");
+  origem.className="sub";
+  origem.textContent="Fonte alternativa identificada (serviço da CAIXA indisponível)";
+  card.append(origem);
+}
 if(d){
 if(slug==="maismilionaria"&&Array.isArray(d.trevosSorteados)){const t=document.createElement("div");t.className="sub";t.textContent="Trevos: "+d.trevosSorteados.join(" e ");card.append(t);}
 const l=document.createElement("div");l.className="links";l.append(link("api/"+slug+"/ultimo.json","Último JSON"),link("api/"+slug+"/"+d.numero+".json","Concurso "+d.numero));card.append(l);
