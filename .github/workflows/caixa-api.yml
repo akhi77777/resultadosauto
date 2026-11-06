@@ -1,5 +1,13 @@
 name: Espelho da API CAIXA
 on:
+  # A primeira execução ocorre automaticamente quando a PR for integrada.
+  # Alterações nos JSONs não reiniciam a coleta.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/caixa-api.yml'
+      - 'caixa-api/src/**'
+      - 'caixa-api/tests/**'
   workflow_dispatch:
     inputs:
       retroativos:
