@@ -61,6 +61,34 @@ class TestCaixa(unittest.TestCase):
                                     buscar_fn=lambda _: amostra(numero=3002))
             self.assertEqual(sucessos, 0)
 
+    def test_supersete_fallback_numerado(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pasta = Path(tmp)
+            historico = []
+            def resposta(url):
+                historico.append(url)
+                if url.endswith("/supersete"):
+                    raise RuntimeError("HTTP 500")
+                if url.endswith("/supersete/918"):
+                    return amostra("supersete", numero=918)
+                raise RuntimeError("concurso ainda nao publicado")
+            sucessos, _ = atualizar(["supersete"], pasta=pasta, buscar_fn=resposta)
+            self.assertEqual(sucessos, 1)
+            salvo = json.loads((pasta / "supersete" / "ultimo.json").read_text())
+            self.assertEqual(salvo["numero"], 918)
+            self.assertIn("/supersete/918", historico[1])
+
+    def test_supersete_preserva_ultimo_quando_fallback_falha(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pasta = Path(tmp)
+            gravar(pasta / "supersete" / "ultimo.json", amostra("supersete", numero=918))
+            def erro(_):
+                raise RuntimeError("HTTP 500")
+            sucessos, _ = atualizar(["supersete"], pasta=pasta, buscar_fn=erro)
+            self.assertEqual(sucessos, 1)
+            salvo = json.loads((pasta / "supersete" / "ultimo.json").read_text())
+            self.assertEqual(salvo["numero"], 918)
+
     def test_ultimo_e_historico(self):
         with tempfile.TemporaryDirectory() as tmp:
             pasta = Path(tmp)
