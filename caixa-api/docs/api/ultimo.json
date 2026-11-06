@@ -1,6 +1,6 @@
 {
   "fonte": "Loterias CAIXA",
-  "atualizadoEm": "2026-11-06T08:06:46+00:00",
+  "atualizadoEm": "2026-11-06T14:49:13+00:00",
   "modalidades": {
     "megasena": {
       "acumulado": true,
@@ -658,6 +658,74 @@
       "valorEstimadoProximoConcurso": 2800000.0,
       "valorSaldoReservaGarantidora": 0.0,
       "valorTotalPremioFaixaUm": 0.0
+    },
+    "supersete": {
+      "numero": 918,
+      "dataApuracao": "04/11/2026",
+      "listaDezenas": [
+        "0",
+        "5",
+        "0",
+        "6",
+        "1",
+        "4",
+        "1"
+      ],
+      "dezenasSorteadasOrdemSorteio": [
+        "0",
+        "5",
+        "0",
+        "6",
+        "1",
+        "4",
+        "1"
+      ],
+      "listaRateioPremio": [
+        {
+          "descricaoFaixa": "7 acertos",
+          "faixa": 1,
+          "numeroDeGanhadores": 0,
+          "valorPremio": 0.0
+        },
+        {
+          "descricaoFaixa": "6 acertos",
+          "faixa": 2,
+          "numeroDeGanhadores": 1,
+          "valorPremio": 21715.12
+        },
+        {
+          "descricaoFaixa": "5 acertos",
+          "faixa": 3,
+          "numeroDeGanhadores": 34,
+          "valorPremio": 912.39
+        },
+        {
+          "descricaoFaixa": "4 acertos",
+          "faixa": 4,
+          "numeroDeGanhadores": 522,
+          "valorPremio": 59.42
+        },
+        {
+          "descricaoFaixa": "3 acertos",
+          "faixa": 5,
+          "numeroDeGanhadores": 4326,
+          "valorPremio": 6.0
+        }
+      ],
+      "acumulado": true,
+      "numeroConcursoProximo": 919,
+      "dataProximoConcurso": "06/11/2026",
+      "localSorteio": "Espaço da Sorte em SAO PAULO, SP",
+      "valorArrecadado": 531552.0,
+      "valorAcumuladoConcurso_0_5": 0.0,
+      "valorAcumuladoConcursoEspecial": 0.0,
+      "valorAcumuladoProximoConcurso": 79625.38,
+      "valorEstimadoProximoConcurso": 200000.0,
+      "observacao": "",
+      "tipoJogo": "SUPER_SETE",
+      "fonteDados": "espelho-secundario",
+      "origemDados": "https://loteriascaixa-api.herokuapp.com/api/supersete/latest",
+      "obtidoDiretamenteDaCaixa": false
     },
     "maismilionaria": {
       "trevosSorteados": [
