@@ -166,12 +166,65 @@ def buscar_supersete_numerado(url: str, anterior: dict | None, buscar_fn):
 
     if ultimo is not None:
         return ultimo
-    if anterior is not None:
-        validar("supersete", anterior)
-        LOG.info("Super Sete: sem novo concurso numerado; mantendo concurso %d",
-                 anterior["numero"])
-        return anterior
     raise RuntimeError("O endpoint geral e o numerado do Super Sete falharam")
+
+
+SUPERSETE_ESPELHO = "https://loteriascaixa-api.herokuapp.com/api/supersete/latest"
+
+
+def buscar_supersete_espelho(buscar_fn):
+    """Converte o espelho secundário para campos compatíveis com os da CAIXA.
+
+    Dados não são identificados como obtidos diretamente do servidor oficial.
+    Campos não presentes no espelho não são inventados.
+    """
+    fonte = buscar_fn(SUPERSETE_ESPELHO)
+    if fonte.get("loteria") != "supersete":
+        raise ValueError("O espelho respondeu outra modalidade")
+    concursos = fonte.get("concurso")
+    if type(concursos) is not int or concursos < 1:
+        raise ValueError("Concurso inválido no espelho")
+    if not numeros_validos(fonte.get("dezenas"), 7, 0, 9, repetidos=True):
+        raise ValueError("Colunas do Super Sete inválidas no espelho")
+    premios = fonte.get("premiacoes")
+    if not isinstance(premios, list) or len(premios) != 5:
+        raise ValueError("Rateio incompleto no espelho")
+    faixas = []
+    for p in premios:
+        if not isinstance(p, dict):
+            raise ValueError("Faixa de premiação malformada")
+        faixas.append({
+            "descricaoFaixa": p.get("descricao"),
+            "faixa": p.get("faixa"),
+            "numeroDeGanhadores": p.get("ganhadores"),
+            "valorPremio": p.get("valorPremio"),
+        })
+    esperado = [1, 2, 3, 4, 5]
+    if [p["faixa"] for p in faixas] != esperado:
+        raise ValueError("Faixas inválidas no espelho")
+    dado = {
+        "numero": concursos,
+        "dataApuracao": fonte.get("data"),
+        "listaDezenas": fonte["dezenas"],
+        "dezenasSorteadasOrdemSorteio": fonte.get("dezenasOrdemSorteio", fonte["dezenas"]),
+        "listaRateioPremio": faixas,
+        "acumulado": fonte.get("acumulou"),
+        "numeroConcursoProximo": fonte.get("proximoConcurso"),
+        "dataProximoConcurso": fonte.get("dataProximoConcurso"),
+        "localSorteio": fonte.get("local"),
+        "valorArrecadado": fonte.get("valorArrecadado"),
+        "valorAcumuladoConcurso_0_5": fonte.get("valorAcumuladoConcurso_0_5"),
+        "valorAcumuladoConcursoEspecial": fonte.get("valorAcumuladoConcursoEspecial"),
+        "valorAcumuladoProximoConcurso": fonte.get("valorAcumuladoProximoConcurso"),
+        "valorEstimadoProximoConcurso": fonte.get("valorEstimadoProximoConcurso"),
+        "observacao": fonte.get("observacao"),
+        "tipoJogo": "SUPER_SETE",
+        "fonteDados": "espelho-secundario",
+        "origemDados": SUPERSETE_ESPELHO,
+        "obtidoDiretamenteDaCaixa": False,
+    }
+    validar("supersete", dado)
+    return dado
 
 
 def atualizar(modalidades, pasta=SAIDA, retroativos=0, buscar_fn=buscar):
@@ -187,7 +240,11 @@ def atualizar(modalidades, pasta=SAIDA, retroativos=0, buscar_fn=buscar):
                 if modalidade != "supersete":
                     raise
                 LOG.warning("Super Sete: endpoint geral indisponível (%s); tentando concursos numerados", exc)
-                dados = buscar_supersete_numerado(url, anterior, buscar_fn)
+                try:
+                    dados = buscar_supersete_numerado(url, anterior, buscar_fn)
+                except RuntimeError as err_numerado:
+                    LOG.warning("Super Sete: consulta numerada também falhou (%s); usando espelho secundário identificado", err_numerado)
+                    dados = buscar_supersete_espelho(buscar_fn)
             validar(modalidade, dados)
             numero = dados["numero"]
             if anterior and isinstance(anterior.get("numero"), int) and (
