@@ -7,8 +7,9 @@ on:
         required: false
         default: '5'
   schedule:
-    - cron: '7,27,47 0-2 * * *'
-    - cron: '17 3,12,15,18,21,23 * * *'
+    # Verifica as modalidades a cada 5 minutos (UTC).
+    # O GitHub pode atrasar ou deixar de executar rodadas agendadas.
+    - cron: '*/5 * * * *'
 permissions:
   contents: write
 concurrency:
