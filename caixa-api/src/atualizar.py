@@ -139,6 +139,41 @@ def gravar(caminho: Path, dados: dict) -> bool:
     return True
 
 
+def buscar_supersete_numerado(url: str, anterior: dict | None, buscar_fn):
+    """Contorna falha do endpoint /supersete consultando concursos numerados.
+
+    O ponto de partida 918 é APENAS um número de concurso conhecido em 04/11/2026,
+    não um resultado fabricado. Todos os dados continuam vindo da CAIXA.
+    """
+    if anterior and isinstance(anterior.get("numero"), int):
+        inicio = anterior["numero"] + 1
+        ultimo = None
+    else:
+        inicio = 918
+        ultimo = None
+
+    # Uma consulta numerada bem-sucedida confirma a fonte CAIXA; um 500
+    # no concurso futuro pode significar que ele ainda não foi apurado.
+    for n in range(inicio, inicio + 3):
+        try:
+            dados = buscar_fn(f"{url}/{n}")
+            validar("supersete", dados, n)
+            ultimo = dados
+            LOG.info("Super Sete: concurso %d confirmado pelo endpoint numerado", n)
+        except (RuntimeError, ValueError) as exc:
+            LOG.warning("Super Sete: concurso numerado %d indisponível: %s", n, exc)
+            break
+
+    if ultimo is not None:
+        return ultimo
+    if anterior is not None:
+        validar("supersete", anterior)
+        LOG.info("Super Sete: sem novo concurso numerado; mantendo concurso %d",
+                 anterior["numero"])
+        return anterior
+    raise RuntimeError("O endpoint geral e o numerado do Super Sete falharam")
+
+
 def atualizar(modalidades, pasta=SAIDA, retroativos=0, buscar_fn=buscar):
     sucessos = 0
     alteracoes = 0
@@ -146,7 +181,13 @@ def atualizar(modalidades, pasta=SAIDA, retroativos=0, buscar_fn=buscar):
         anterior = ler(pasta / modalidade / "ultimo.json")
         try:
             url = f"{BASE}/{modalidade}"
-            dados = buscar_fn(url)
+            try:
+                dados = buscar_fn(url)
+            except RuntimeError as exc:
+                if modalidade != "supersete":
+                    raise
+                LOG.warning("Super Sete: endpoint geral indisponível (%s); tentando concursos numerados", exc)
+                dados = buscar_supersete_numerado(url, anterior, buscar_fn)
             validar(modalidade, dados)
             numero = dados["numero"]
             if anterior and isinstance(anterior.get("numero"), int) and (
