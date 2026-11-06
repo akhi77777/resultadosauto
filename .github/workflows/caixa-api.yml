@@ -1,0 +1,39 @@
+name: Espelho da API CAIXA
+on:
+  workflow_dispatch:
+    inputs:
+      retroativos:
+        description: Numero de concursos anteriores (0-20)
+        required: false
+        default: '5'
+  schedule:
+    - cron: '7,27,47 0-2 * * *'
+    - cron: '17 3,12,15,18,21,23 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: espelho-resultados-caixa
+  cancel-in-progress: false
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Testes
+        run: python -m unittest discover -s caixa-api/tests -v
+      - name: Consultar a CAIXA
+        env:
+          RETROATIVOS: ${{ github.event.inputs.retroativos || '0' }}
+        run: python caixa-api/src/atualizar.py --retroativos "$RETROATIVOS"
+      - name: Salvar resultados
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add caixa-api/docs/api
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Atualiza espelho de resultados da CAIXA"
+          git push
