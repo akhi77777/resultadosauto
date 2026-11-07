@@ -1,23 +1,23 @@
 {
-  "numero": 918,
-  "dataApuracao": "04/11/2026",
+  "numero": 919,
+  "dataApuracao": "06/11/2026",
   "listaDezenas": [
-    "0",
-    "5",
-    "0",
-    "6",
+    "3",
     "1",
+    "9",
+    "5",
     "4",
-    "1"
+    "2",
+    "2"
   ],
   "dezenasSorteadasOrdemSorteio": [
-    "0",
-    "5",
-    "0",
-    "6",
+    "3",
     "1",
+    "9",
+    "5",
     "4",
-    "1"
+    "2",
+    "2"
   ],
   "listaRateioPremio": [
     {
@@ -29,37 +29,37 @@
     {
       "descricaoFaixa": "6 acertos",
       "faixa": 2,
-      "numeroDeGanhadores": 1,
-      "valorPremio": 21715.12
+      "numeroDeGanhadores": 2,
+      "valorPremio": 8140.81
     },
     {
       "descricaoFaixa": "5 acertos",
       "faixa": 3,
-      "numeroDeGanhadores": 34,
-      "valorPremio": 912.39
+      "numeroDeGanhadores": 18,
+      "valorPremio": 1292.19
     },
     {
       "descricaoFaixa": "4 acertos",
       "faixa": 4,
-      "numeroDeGanhadores": 522,
-      "valorPremio": 59.42
+      "numeroDeGanhadores": 358,
+      "valorPremio": 64.97
     },
     {
       "descricaoFaixa": "3 acertos",
       "faixa": 5,
-      "numeroDeGanhadores": 4326,
+      "numeroDeGanhadores": 3111,
       "valorPremio": 6.0
     }
   ],
   "acumulado": true,
-  "numeroConcursoProximo": 919,
-  "dataProximoConcurso": "06/11/2026",
+  "numeroConcursoProximo": 920,
+  "dataProximoConcurso": "09/11/2026",
   "localSorteio": "Espaço da Sorte em SAO PAULO, SP",
-  "valorArrecadado": 531552.0,
+  "valorArrecadado": 396732.0,
   "valorAcumuladoConcurso_0_5": 0.0,
   "valorAcumuladoConcursoEspecial": 0.0,
-  "valorAcumuladoProximoConcurso": 79625.38,
-  "valorEstimadoProximoConcurso": 200000.0,
+  "valorAcumuladoProximoConcurso": 139324.75,
+  "valorEstimadoProximoConcurso": 250000.0,
   "observacao": "",
   "tipoJogo": "SUPER_SETE",
   "fonteDados": "espelho-secundario",
