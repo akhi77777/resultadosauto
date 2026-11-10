@@ -1,0 +1,68 @@
+{
+  "numero": 920,
+  "dataApuracao": "09/11/2026",
+  "listaDezenas": [
+    "5",
+    "8",
+    "1",
+    "3",
+    "8",
+    "2",
+    "0"
+  ],
+  "dezenasSorteadasOrdemSorteio": [
+    "5",
+    "8",
+    "1",
+    "3",
+    "8",
+    "2",
+    "0"
+  ],
+  "listaRateioPremio": [
+    {
+      "descricaoFaixa": "7 acertos",
+      "faixa": 1,
+      "numeroDeGanhadores": 0,
+      "valorPremio": 0.0
+    },
+    {
+      "descricaoFaixa": "6 acertos",
+      "faixa": 2,
+      "numeroDeGanhadores": 2,
+      "valorPremio": 9030.02
+    },
+    {
+      "descricaoFaixa": "5 acertos",
+      "faixa": 3,
+      "numeroDeGanhadores": 28,
+      "valorPremio": 921.43
+    },
+    {
+      "descricaoFaixa": "4 acertos",
+      "faixa": 4,
+      "numeroDeGanhadores": 399,
+      "valorPremio": 64.66
+    },
+    {
+      "descricaoFaixa": "3 acertos",
+      "faixa": 5,
+      "numeroDeGanhadores": 3291,
+      "valorPremio": 6.0
+    }
+  ],
+  "acumulado": true,
+  "numeroConcursoProximo": 921,
+  "dataProximoConcurso": "11/11/2026",
+  "localSorteio": "Espaço da Sorte em SAO PAULO, SP",
+  "valorArrecadado": 437877.0,
+  "valorAcumuladoConcurso_0_5": 0.0,
+  "valorAcumuladoConcursoEspecial": 0.0,
+  "valorAcumuladoProximoConcurso": 205545.39,
+  "valorEstimadoProximoConcurso": 300000.0,
+  "observacao": "",
+  "tipoJogo": "SUPER_SETE",
+  "fonteDados": "espelho-secundario",
+  "origemDados": "https://loteriascaixa-api.herokuapp.com/api/supersete/latest",
+  "obtidoDiretamenteDaCaixa": false
+}
