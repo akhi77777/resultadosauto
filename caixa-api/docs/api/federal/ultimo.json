@@ -1,54 +1,54 @@
 {
   "acumulado": false,
-  "dataApuracao": "11/11/2026",
+  "dataApuracao": "16/11/2026",
   "dataProximoConcurso": "",
   "dezenasSorteadasOrdemSorteio": [
-    "047376",
-    "032229",
-    "031114",
-    "059504",
-    "016594"
+    "062545",
+    "065170",
+    "057177",
+    "083440",
+    "054040"
   ],
   "exibirDetalhamentoPorCidade": false,
   "id": null,
   "indicadorConcursoEspecial": 1,
   "listaDezenas": [
-    "047376",
-    "032229",
-    "031114",
-    "059504",
-    "016594"
+    "062545",
+    "065170",
+    "057177",
+    "083440",
+    "054040"
   ],
   "listaDezenasSegundoSorteio": null,
   "listaMunicipioUFGanhadores": [
     {
       "ganhadores": 0,
-      "municipio": "VERISSIMO",
-      "nomeFatansiaUL": "LOTERIAS VERISSIMO LTDA",
-      "posicao": 4,
-      "serie": "A",
-      "uf": "MG"
-    },
-    {
-      "ganhadores": 0,
-      "municipio": "CAMPINAS",
-      "nomeFatansiaUL": "MATTOSO  LOTERIAS",
-      "posicao": 2,
-      "serie": "A",
-      "uf": "SP"
-    },
-    {
-      "ganhadores": 0,
-      "municipio": "CAMPINAS",
-      "nomeFatansiaUL": "RICO LOTERICO",
+      "municipio": "VITORIA DA CONQUISTA",
+      "nomeFatansiaUL": "KISORTE",
       "posicao": 3,
       "serie": "A",
-      "uf": "SP"
+      "uf": "BA"
     },
     {
       "ganhadores": 0,
-      "municipio": "FRANCA",
-      "nomeFatansiaUL": "M B DE SOUSA & SOUZA LOTERIAS LTDA - ME",
+      "municipio": "BLUMENAU",
+      "nomeFatansiaUL": "MEGA SORTE",
+      "posicao": 2,
+      "serie": "A",
+      "uf": "SC"
+    },
+    {
+      "ganhadores": 0,
+      "municipio": "SAO JOSE",
+      "nomeFatansiaUL": "ATLANTICA LOTERIAS",
+      "posicao": 4,
+      "serie": "A",
+      "uf": "SC"
+    },
+    {
+      "ganhadores": 0,
+      "municipio": "ITATIBA",
+      "nomeFatansiaUL": "STAR LUCK LOTERIAS",
       "posicao": 5,
       "serie": "A",
       "uf": "SP"
@@ -56,7 +56,7 @@
     {
       "ganhadores": 0,
       "municipio": "SAO JOSE DOS CAMPOS",
-      "nomeFatansiaUL": "LOTERICA ANDROMEDA",
+      "nomeFatansiaUL": "LOTERICA SATELITE",
       "posicao": 1,
       "serie": "A",
       "uf": "SP"
@@ -67,13 +67,13 @@
       "descricaoFaixa": "1 acertos",
       "faixa": 1,
       "numeroDeGanhadores": 1,
-      "valorPremio": 500000.0
+      "valorPremio": 1350000.0
     },
     {
       "descricaoFaixa": "2 acertos",
       "faixa": 2,
       "numeroDeGanhadores": 1,
-      "valorPremio": 35000.0
+      "valorPremio": 40000.0
     },
     {
       "descricaoFaixa": "3 acertos",
@@ -85,23 +85,23 @@
       "descricaoFaixa": "4 acertos",
       "faixa": 4,
       "numeroDeGanhadores": 1,
-      "valorPremio": 25000.0
+      "valorPremio": 20000.0
     },
     {
       "descricaoFaixa": "5 acertos",
       "faixa": 5,
       "numeroDeGanhadores": 1,
-      "valorPremio": 20363.0
+      "valorPremio": 17339.0
     }
   ],
   "listaResultadoEquipeEsportiva": null,
   "localSorteio": "ESPAÇO DA SORTE",
   "nomeMunicipioUFSorteio": "SAO PAULO, SP",
   "nomeTimeCoracaoMesSorte": null,
-  "numero": 6117,
-  "numeroConcursoAnterior": 6116,
+  "numero": 6118,
+  "numeroConcursoAnterior": 6117,
   "numeroConcursoFinal_0_5": 0,
-  "numeroConcursoProximo": 6118,
+  "numeroConcursoProximo": 6119,
   "numeroJogo": 10,
   "observacao": null,
   "premiacaoContingencia": null,
